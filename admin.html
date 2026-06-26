@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a2e4a">
+  <title>Admin — จัดการรถ</title>
+  <style>
+    /* ── TOKENS ─────────────────────────────────────────────── */
+    :root {
+      --navy:    #1a2e4a;
+      --navy-d:  #111e30;
+      --bg:      #f0f3f7;
+      --surface: #ffffff;
+      --border:  #e2e8f0;
+      --text:    #0f172a;
+      --muted:   #64748b;
+      --accent:  #f59e0b;
+      --blue:    #2563eb;
+      --green:   #16a34a;
+      --red:     #dc2626;
+      --shadow:  0 1px 4px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.04);
+      --shadow-up: 0 -4px 24px rgba(0,0,0,.12);
+      --r:       12px;
+      --r-sm:    8px;
+    }
+
+    /* ── RESET ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── LOGIN ──────────────────────────────────────────────── */
+    #login-view {
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: linear-gradient(160deg, var(--navy-d) 0%, var(--navy) 55%, #1e3f6b 100%);
+    }
+
+    .login-card {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 36px 28px 28px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .login-logo .icon { font-size: 42px; line-height: 1; margin-bottom: 10px; }
+    .login-logo h1 { font-size: 20px; font-weight: 800; color: var(--navy); letter-spacing: -.3px; }
+    .login-logo p  { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* ── FORM ELEMENTS ──────────────────────────────────────── */
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+      transition: border-color .18s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .form-input:focus { border-color: var(--blue); }
+    .form-input::placeholder { color: #b0bec5; }
+
+    textarea.form-input { resize: vertical; min-height: 90px; line-height: 1.5; }
+    select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+    .form-group   { margin-bottom: 14px; }
+    .form-row     { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-hint    { font-size: 11px; color: var(--muted); margin-top: 4px; text-align: right; }
+
+    /* ── BUTTONS ────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 11px 18px;
+      border-radius: var(--r-sm);
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s, box-shadow .15s;
+      white-space: nowrap;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      text-decoration: none;
+    }
+    .btn:active { transform: scale(.96); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+    .btn-navy    { background: var(--navy);  color: #fff; }
+    .btn-blue    { background: var(--blue);  color: #fff; }
+    .btn-green   { background: var(--green); color: #fff; }
+    .btn-red     { background: var(--red);   color: #fff; }
+    .btn-amber   { background: var(--accent); color: #fff; }
+    .btn-ghost   { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+    .btn-full    { width: 100%; }
+    .btn-sm      { padding: 7px 12px; font-size: 12px; border-radius: 7px; }
+
+    /* ── ADMIN HEADER ───────────────────────────────────────── */
+    #admin-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--navy);
+      color: white;
+      height: 54px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    }
+
+    #admin-header h1 {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -.2px;
+    }
+
+    #btn-logout {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      color: white;
+      border-radius: 7px;
+      padding: 7px 13px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #btn-logout:active { background: rgba(255,255,255,.2); }
+
+    /* ── MAIN CONTENT ───────────────────────────────────────── */
+    #admin-content {
+      padding: 14px;
+      max-width: 700px;
+      margin: 0 auto;
+      padding-bottom: 40px;
+    }
+
+    /* ── TOP BAR ────────────────────────────────────────────── */
+    .top-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .top-bar .btn   { flex-shrink: 0; }
+    .top-bar .form-input { flex: 1; min-width: 0; }
+
+    /* ── TABS ───────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      background: var(--surface);
+      border-radius: var(--r-sm);
+      padding: 3px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+      gap: 2px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px 4px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all .2s;
+      color: var(--muted);
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tab.active { background: var(--navy); color: white; }
+
+    /* ── CAR COUNT ──────────────────────────────────────────── */
+    .car-count {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      padding-left: 2px;
+    }
+
+    /* ── CAR CARD ───────────────────────────────────────────── */
+    .car-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      margin-bottom: 10px;
+      display: flex;
+      position: relative;
+    }
+
+    /* Left status bar */
+    .car-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+    }
+    .car-card[data-status="available"]::before { background: var(--green); }
+    .car-card[data-status="sold"]::before      { background: var(--muted); }
+    .car-card[data-hot="true"]::before          { background: var(--accent); }
+
+    .car-thumb {
+      width: 100px;
+      min-height: 84px;
+      flex-shrink: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      color: var(--muted);
+      margin-left: 4px; /* offset the status bar */
+    }
+    .car-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .car-body {
+      flex: 1;
+      padding: 10px 12px 8px;
+      min-width: 0;
+    }
+
+    .car-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 1px;
+    }
+
+    .car-meta {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .car-price {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 7px;
+    }
+
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+    .badge-hot    { background: #fff3cd; color: #b45309; }
+    .badge-sold   { background: #e0e7ff; color: #3730a3; }
+    .badge-tiktok { background: #ffe4e6; color: #be123c; }
+    .badge-pic    { background: #f0fdf4; color: #166534; }
+
+    .car-actions {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    .car-actions .btn { flex: 1; min-width: 0; padding: 7px 8px; font-size: 11px; }
+
+    /* ── EMPTY STATE ─────────────────────────────────────────── */
+    .empty {
+      text-align: center;
+      padding: 64px 24px;
+      color: var(--muted);
+    }
+    .empty .icon { font-size: 52px; margin-bottom: 12px; }
+    .empty h3    { font-size: 16px; margin-bottom: 4px; color: var(--text); }
+
+    /* ── MODAL OVERLAY ──────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      -webkit-backdrop-filter: blur(2px);
+      backdrop-filter: blur(2px);
+    }
+
+    .modal-panel {
+      background: var(--surface);
+      border-radius: 22px 22px 0 0;
+      width: 100%;
+      max-width: 640px;
+      max-height: 93dvh;
+      display: flex;
+      flex-direction: column;
+      animation: slide-up .22s ease;
+      box-shadow: var(--shadow-up);
+    }
+    @keyframes slide-up {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+
+    .modal-header {
+      padding: 16px 18px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .modal-header h2   { font-size: 17px; font-weight: 800; }
+    .modal-close-btn {
+      width: 30px; height: 30px;
+      background: var(--bg);
+      border: none;
+      border-radius: 50%;
+      font-size: 18px;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .modal-body {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 18px;
+      flex: 1;
+    }
+
+    .modal-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .modal-footer .btn { flex: 1; padding: 13px; }
+
+    /* ── TOGGLE ─────────────────────────────────────────────── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg);
+      border-radius: var(--r-sm);
+      padding: 12px 14px;
+    }
+    .toggle-row .label { flex: 1; font-weight: 700; font-size: 14px; }
+
+    .toggle {
+      position: relative;
+      width: 46px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+    .toggle input { display: none; }
+    .toggle-track {
+      position: absolute; inset: 0;
+      background: var(--border);
+      border-radius: 13px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: white;
+      top: 3px; left: 3px;
+      transition: transform .2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    .toggle input:checked + .toggle-track                  { background: var(--accent); }
+    .toggle input:checked + .toggle-track::after           { transform: translateX(20px); }
+
+    /* ── IMAGE MANAGER ──────────────────────────────────────── */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--r-sm);
+      padding: 28px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .18s, background .18s;
+      margin-bottom: 14px;
+    }
+    .drop-zone:hover, .drop-zone.over {
+      border-color: var(--blue);
+      background: #eff6ff;
+    }
+    .drop-zone .dz-icon { font-size: 30px; margin-bottom: 8px; }
+    .drop-zone p { color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .drop-zone strong { color: var(--text); }
+
+    .upload-progress {
+      background: #eff6ff;
+      border-radius: var(--r-sm);
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--blue);
+      font-weight: 600;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .img-item {
+      position: relative;
+      aspect-ratio: 4/3;
+      border-radius: var(--r-sm);
+      overflow: hidden;
+      background: var(--bg);
+    }
+    .img-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .img-cover-badge {
+      position: absolute;
+      top: 6px; left: 6px;
+      background: var(--navy);
+      color: white;
+      font-size: 10px; font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+    .img-actions {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,.65));
+      padding: 18px 5px 5px;
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+    }
+    .img-btn {
+      background: rgba(255,255,255,.9);
+      border: none;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 12px; font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--text);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .img-btn.del { background: rgba(220,38,38,.9); color: white; }
+
+    /* ── CONFIRM DIALOG ─────────────────────────────────────── */
+    #confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .confirm-card {
+      background: white;
+      border-radius: 18px;
+      padding: 28px 24px 22px;
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    }
+    .confirm-card .cf-icon { font-size: 38px; margin-bottom: 10px; }
+    .confirm-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+    .confirm-card p  { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+    .confirm-btns    { display: flex; gap: 10px; }
+    .confirm-btns .btn { flex: 1; padding: 12px; }
+
+    /* ── TOAST ──────────────────────────────────────────────── */
+    #toast-wrap {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      background: #1e293b;
+      color: white;
+      padding: 10px 22px;
+      border-radius: 22px;
+      font-size: 14px; font-weight: 600;
+      animation: toast-in .25s ease;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+    }
+    .toast.ok  { background: var(--green); }
+    .toast.err { background: var(--red); }
+    @keyframes toast-in {
+      from { transform: translateY(16px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+
+    /* ── SPINNER ────────────────────────────────────────────── */
+    .spin {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.35);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin .65s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── SECTION DIVIDER ────────────────────────────────────── */
+    .section-header {
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .7px;
+      color: var(--muted);
+      padding: 6px 2px 4px;
+      border-bottom: 1px solid var(--border);
+      margin: 18px 0 12px;
+    }
+
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════ LOGIN VIEW ════════════════════ -->
+<section id="login-view">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="icon">🚗</div>
+      <h1 id="login-shop-name">Admin Panel</h1>
+      <p>ระบบจัดการรถมือสอง</p>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="login-email">อีเมลแอดมิน</label>
+      <input class="form-input" type="email" id="login-email" placeholder="admin@yourshop.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="login-password">รหัสผ่าน</label>
+      <input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <p id="login-error" hidden style="color:var(--red);font-size:13px;text-align:center;margin-bottom:12px;"></p>
+    <button class="btn btn-navy btn-full" id="btn-login">เข้าสู่ระบบ</button>
+  </div>
+</section>
+
+<!-- ════════════════════ ADMIN VIEW ════════════════════ -->
+<div id="admin-view" hidden>
+  <header id="admin-header">
+    <h1>🚗 <span id="header-shop-name">Admin</span></h1>
+    <button id="btn-logout">ออกระบบ</button>
+  </header>
+
+  <div id="admin-content">
+    <!-- Top bar -->
+    <div class="top-bar">
+      <button class="btn btn-amber" id="btn-add-car">+ เพิ่มรถ</button>
+      <input class="form-input" type="search" id="search-q" placeholder="🔍 ค้นหายี่ห้อ รุ่น ทะเบียน...">
+    </div>
+
+    <!-- Filter tabs -->
+    <nav class="tabs">
+      <button class="tab active" data-filter="all">ทั้งหมด</button>
+      <button class="tab" data-filter="available">พร้อมขาย</button>
+      <button class="tab" data-filter="sold">ขายแล้ว</button>
+    </nav>
+
+    <p class="car-count" id="car-count">กำลังโหลด...</p>
+    <div id="car-list"></div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ CAR FORM MODAL ════════════════════ -->
+<div class="modal-overlay" id="car-modal" hidden>
+  <div class="modal-panel">
+    <div class="modal-header">
+      <h2 id="car-modal-title">เพิ่มรถใหม่</h2>
+      <button class="modal-close-btn" data-modal="car-modal">×</button>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" id="f-id">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="f-brand">ยี่ห้อ *</label>
+          <input class="form-input" type="text" id="f-brand" placeholder="Toyota">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-model">รุ่น *</label>
+          <input class="form-input" type="text" id="f-model" placeholder="Camry">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="f-sub-model">รุ่นย่อย</label>
+          <input class="form-input" type="text" id="f-sub-model" placeholder="2.5 G">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-year">ปี (พ.ศ.) *</label>
+          <input class="form-input" type="number" id="f-year" placeholder="2567" min="2530" max="2580">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="f-plate">ทะเบียน</label>
+        <input class="form-input" type="text" id="f-plate" placeholder="กข 1234 กทม.">
+      </div>
+
+      <div class="section-header">ราคา</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="f-price">ราคาขาย (บาท) *</label>
+          <input class="form-input" type="number" id="f-price" placeholder="350000" inputmode="numeric">
+          <p class="form-hint" id="f-price-fmt"></p>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-orig-price">ราคาก่อนลด</label>
+          <input class="form-input" type="number" id="f-orig-price" placeholder="390000" inputmode="numeric">
+          <p class="form-hint" id="f-orig-price-fmt"></p>
+        </div>
+      </div>
+
+      <div class="section-header">รายละเอียดรถ</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="f-mileage">เลขไมล์ (กม.)</label>
+          <input class="form-input" type="number" id="f-mileage" placeholder="45000" inputmode="numeric">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-engine">เครื่องยนต์</label>
+          <input class="form-input" type="text" id="f-engine" placeholder="1.5 DOHC">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="f-gear">เกียร์</label>
+        <select class="form-input" id="f-gear">
+          <option value="">-- เลือกประเภทเกียร์ --</option>
+          <option value="ออโต้">ออโต้</option>
+          <option value="ธรรมดา">ธรรมดา</option>
+          <option value="CVT">CVT</option>
+          <option value="DCT">DCT</option>
+          <option value="อื่นๆ">อื่นๆ</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="f-desc">รายละเอียดเพิ่มเติม</label>
+        <textarea class="form-input" id="f-desc" placeholder="สี เลขตัวถัง ประวัติซ่อม ของแต่ง ฯลฯ"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="f-tiktok">ลิงก์ TikTok (ถ้ามี)</label>
+        <input class="form-input" type="url" id="f-tiktok" placeholder="https://www.tiktok.com/@...">
+      </div>
+
+      <div class="form-group">
+        <div class="toggle-row">
+          <span class="label">🔥 HOT — ไฮไลต์รถคันนี้ในโชว์รูม</span>
+          <label class="toggle">
+            <input type="checkbox" id="f-hot">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-modal="car-modal">ยกเลิก</button>
+      <button class="btn btn-navy" id="btn-save-car">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ IMAGE MANAGER MODAL ════════════════════ -->
+<div class="modal-overlay" id="img-modal" hidden>
+  <div class="modal-panel">
+    <div class="modal-header">
+      <h2>📷 จัดการรูปภาพ</h2>
+      <button class="modal-close-btn" data-modal="img-modal">×</button>
+    </div>
+
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">
+        รูปแรก (ปก) แสดงในการ์ดรถ · ใช้ ↑ ↓ จัดลำดับ · อัปโหลดได้หลายรูปพร้อมกัน
+      </p>
+
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="file-input" accept="image/*" multiple hidden>
+        <div class="dz-icon">📁</div>
+        <p><strong>แตะเพื่อเลือกรูป</strong><br>JPG / PNG / WebP — รูปจะถูกย่อให้ไม่เกิน 1,400px</p>
+      </div>
+
+      <div class="upload-progress" id="upload-progress" hidden></div>
+
+      <div class="image-grid" id="image-grid"></div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-navy btn-full" data-modal="img-modal" id="btn-img-done">✅ เสร็จแล้ว</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ CONFIRM DIALOG ════════════════════ -->
+<div id="confirm-overlay" hidden>
+  <div class="confirm-card">
+    <div class="cf-icon" id="cf-icon">⚠️</div>
+    <h3 id="cf-title">ยืนยันการดำเนินการ</h3>
+    <p id="cf-msg"></p>
+    <div class="confirm-btns">
+      <button class="btn btn-ghost" id="btn-cf-cancel">ยกเลิก</button>
+      <button class="btn btn-red" id="btn-cf-ok">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-wrap"></div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SCRIPT — ES Module, no build step
+     ════════════════════════════════════════════════════════ -->
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+// ════════════════════════════════════════════════════════
+// !! CONFIG — แก้ตรงนี้ก่อน deploy !!
+// ════════════════════════════════════════════════════════
+const CONFIG = {
+  SUPABASE_URL:     'https://YOUR_PROJECT_ID.supabase.co',   // Project URL
+  SUPABASE_KEY:     'YOUR_ANON_PUBLIC_KEY',                  // anon public key
+  BUCKET:           'car-photos',
+  SHOP_NAME:        'ชื่อร้านของคุณ',                        // แสดงใน header
+  MAX_IMG_WIDTH:    1400,                                     // ย่อรูปก่อนอัปโหลด
+  JPEG_QUALITY:     0.82,
+};
+// ════════════════════════════════════════════════════════
+
+const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+
+// ── DOM refs ─────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const loginView   = $('login-view');
+const adminView   = $('admin-view');
+const carList     = $('car-list');
+const carCount    = $('car-count');
+const imageGrid   = $('image-grid');
+const dropZone    = $('drop-zone');
+const fileInput   = $('file-input');
+const uploadProg  = $('upload-progress');
+
+// ── State ─────────────────────────────────────────────────
+let cars          = [];
+let filter        = 'all';
+let searchQ       = '';
+let imgCarId      = null;  // car being edited in image modal
+let cfCallback    = null;  // confirm callback
+
+// ────────────────────────────────────────────────────────
+// INIT
+// ────────────────────────────────────────────────────────
+$('login-shop-name').textContent = CONFIG.SHOP_NAME;
+$('header-shop-name').textContent = CONFIG.SHOP_NAME;
+document.title = `Admin — ${CONFIG.SHOP_NAME}`;
+
+// ────────────────────────────────────────────────────────
+// AUTH
+// ────────────────────────────────────────────────────────
+sb.auth.onAuthStateChange((_e, session) => {
+  if (session) {
+    loginView.hidden = true;
+    adminView.hidden = false;
+    loadCars();
+  } else {
+    loginView.hidden = false;
+    adminView.hidden = true;
+  }
+});
+
+$('btn-login').addEventListener('click', doLogin);
+$('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+async function doLogin() {
+  const email = $('login-email').value.trim();
+  const pass  = $('login-password').value;
+  const errEl = $('login-error');
+  const btn   = $('btn-login');
+
+  if (!email || !pass) {
+    errEl.textContent = 'กรุณากรอกอีเมลและรหัสผ่าน';
+    errEl.hidden = false;
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spin"></div> กำลังเข้าสู่ระบบ...';
+  errEl.hidden = true;
+
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+
+  btn.disabled = false;
+  btn.textContent = 'เข้าสู่ระบบ';
+
+  if (error) {
+    errEl.textContent = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+    errEl.hidden = false;
+  }
+}
+
+$('btn-logout').addEventListener('click', () => sb.auth.signOut());
+
+// ────────────────────────────────────────────────────────
+// LOAD & RENDER CARS
+// ────────────────────────────────────────────────────────
+async function loadCars() {
+  const { data, error } = await sb
+    .from('cars')
+    .select('*, car_images(id, image_url, sort_order)')
+    .order('created_at', { ascending: false });
+
+  if (error) { toast('ไม่สามารถโหลดข้อมูลได้', 'err'); return; }
+
+  cars = (data || []).map(c => ({
+    ...c,
+    car_images: (c.car_images || []).sort((a, b) => a.sort_order - b.sort_order),
+  }));
+
+  renderCars();
+}
+
+function filteredCars() {
+  return cars.filter(c => {
+    const matchF = filter === 'all'
+      || (filter === 'available' && c.status === 'available')
+      || (filter === 'sold'      && c.status === 'sold');
+
+    const q = searchQ.toLowerCase();
+    const matchS = !q
+      || c.brand?.toLowerCase().includes(q)
+      || c.model?.toLowerCase().includes(q)
+      || c.sub_model?.toLowerCase().includes(q)
+      || c.license_plate?.toLowerCase().includes(q);
+
+    return matchF && matchS;
+  });
+}
+
+function fmtPrice(n) {
+  if (!n) return '';
+  return Number(n).toLocaleString('th-TH') + ' ฿';
+}
+
+function renderCars() {
+  const list = filteredCars();
+  carCount.textContent = `แสดง ${list.length} คัน จากทั้งหมด ${cars.length} คัน`;
+
+  if (!list.length) {
+    carList.innerHTML = `
+      <div class="empty">
+        <div class="icon">🚗</div>
+        <h3>${cars.length === 0 ? 'ยังไม่มีรถในระบบ' : 'ไม่พบรถที่ตรงเงื่อนไข'}</h3>
+        <p>${cars.length === 0 ? 'กด "+ เพิ่มรถ" เพื่อเริ่มต้น' : 'ลองเปลี่ยนตัวกรองหรือคำค้นหา'}</p>
+      </div>`;
+    return;
+  }
+
+  carList.innerHTML = list.map(c => {
+    const cover = c.car_images?.[0]?.image_url;
+    const isSold = c.status === 'sold';
+    const picCount = c.car_images?.length || 0;
+
+    return `
+      <div class="car-card" data-status="${c.status}" data-hot="${c.is_hot}">
+        <div class="car-thumb">
+          ${cover ? `<img src="${cover}" alt="${c.brand} ${c.model}" loading="lazy">` : '🚗'}
+        </div>
+        <div class="car-body">
+          <div class="car-title">${c.brand} ${c.model}${c.sub_model ? ' ' + c.sub_model : ''}</div>
+          <div class="car-meta">ปี ${c.year}${c.license_plate ? ' · ' + c.license_plate : ''}</div>
+          <div class="badges">
+            ${c.is_hot   ? '<span class="badge badge-hot">🔥 HOT</span>' : ''}
+            ${isSold     ? '<span class="badge badge-sold">✅ ขายแล้ว</span>' : ''}
+            ${c.tiktok_url ? '<span class="badge badge-tiktok">🎵 TikTok</span>' : ''}
+            <span class="badge badge-pic">📷 ${picCount} รูป</span>
+          </div>
+          <div class="car-price">${fmtPrice(c.price)}${c.original_price ? ` <span style="font-size:11px;color:var(--muted);text-decoration:line-through;">${fmtPrice(c.original_price)}</span>` : ''}</div>
+          <div class="car-actions">
+            <button class="btn btn-ghost btn-sm" data-action="edit"   data-id="${c.id}">✏️ แก้ไข</button>
+            <button class="btn btn-ghost btn-sm" data-action="images" data-id="${c.id}">📷 รูป</button>
+            <button class="btn ${isSold ? 'btn-ghost' : 'btn-green'} btn-sm" data-action="sold" data-id="${c.id}" data-sold="${isSold}">
+              ${isSold ? '↩️ คืนสต็อก' : '✅ ขายแล้ว'}
+            </button>
+            <button class="btn btn-red btn-sm" data-action="delete" data-id="${c.id}" data-name="${c.brand} ${c.model}">🗑️</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// Event delegation for car actions
+carList.addEventListener('click', e => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+
+  const { action, id, sold, name } = btn.dataset;
+
+  if (action === 'edit')   openCarModal(cars.find(c => c.id === id));
+  if (action === 'images') openImageModal(id);
+  if (action === 'sold')   doToggleSold(id, sold === 'true');
+  if (action === 'delete') doDeleteCar(id, name);
+});
+
+// Search & filter
+$('search-q').addEventListener('input', e => { searchQ = e.target.value; renderCars(); });
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    filter = tab.dataset.filter;
+    renderCars();
+  });
+});
+
+// ────────────────────────────────────────────────────────
+// CAR FORM MODAL
+// ────────────────────────────────────────────────────────
+$('btn-add-car').addEventListener('click', () => openCarModal());
+
+function openCarModal(car = null) {
+  $('car-modal-title').textContent = car ? 'แก้ไขข้อมูลรถ' : 'เพิ่มรถใหม่';
+  $('f-id').value            = car?.id            || '';
+  $('f-brand').value         = car?.brand         || '';
+  $('f-model').value         = car?.model         || '';
+  $('f-sub-model').value     = car?.sub_model     || '';
+  $('f-year').value          = car?.year          || (new Date().getFullYear() + 543);
+  $('f-plate').value         = car?.license_plate || '';
+  $('f-price').value         = car?.price         || '';
+  $('f-orig-price').value    = car?.original_price || '';
+  $('f-mileage').value       = car?.mileage        || '';
+  $('f-engine').value        = car?.engine         || '';
+  $('f-gear').value          = car?.gear           || '';
+  $('f-desc').value          = car?.description    || '';
+  $('f-tiktok').value        = car?.tiktok_url     || '';
+  $('f-hot').checked         = car?.is_hot         || false;
+  updatePriceFmt();
+  openModal('car-modal');
+}
+
+// Price formatter hints
+function updatePriceFmt() {
+  const p = $('f-price').value;
+  const o = $('f-orig-price').value;
+  $('f-price-fmt').textContent    = p ? Number(p).toLocaleString('th-TH') + ' บาท' : '';
+  $('f-orig-price-fmt').textContent = o ? Number(o).toLocaleString('th-TH') + ' บาท' : '';
+}
+$('f-price').addEventListener('input',      updatePriceFmt);
+$('f-orig-price').addEventListener('input', updatePriceFmt);
+
+$('btn-save-car').addEventListener('click', doSaveCar);
+
+async function doSaveCar() {
+  const brand = $('f-brand').value.trim();
+  const model = $('f-model').value.trim();
+  const year  = parseInt($('f-year').value);
+  const price = parseInt($('f-price').value);
+
+  if (!brand || !model || !year || !price) {
+    toast('กรุณากรอกยี่ห้อ รุ่น ปี และราคา', 'err');
+    return;
+  }
+
+  const id     = $('f-id').value;
+  const isEdit = !!id;
+
+  const payload = {
+    brand,
+    model,
+    sub_model:      $('f-sub-model').value.trim()  || null,
+    year,
+    license_plate:  $('f-plate').value.trim()       || null,
+    price,
+    original_price: parseInt($('f-orig-price').value) || null,
+    mileage:        parseInt($('f-mileage').value)    || null,
+    engine:         $('f-engine').value.trim()         || null,
+    gear:           $('f-gear').value                  || null,
+    description:    $('f-desc').value.trim()           || null,
+    tiktok_url:     $('f-tiktok').value.trim()         || null,
+    is_hot:         $('f-hot').checked,
+  };
+
+  const btn = $('btn-save-car');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spin"></div> กำลังบันทึก...';
+
+  let newCarId = id;
+  let error;
+
+  if (isEdit) {
+    ({ error } = await sb.from('cars').update(payload).eq('id', id));
+  } else {
+    const { data, error: e } = await sb.from('cars').insert(payload).select().single();
+    error = e;
+    newCarId = data?.id;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '💾 บันทึก';
+
+  if (error) {
+    toast('บันทึกล้มเหลว: ' + error.message, 'err');
+    return;
+  }
+
+  toast(isEdit ? 'แก้ไขสำเร็จ' : 'เพิ่มรถสำเร็จ', 'ok');
+  closeModal('car-modal');
+  await loadCars();
+
+  // Auto-open image manager for new cars
+  if (!isEdit && newCarId) {
+    setTimeout(() => openImageModal(newCarId), 280);
+  }
+}
+
+// ────────────────────────────────────────────────────────
+// TOGGLE SOLD
+// ────────────────────────────────────────────────────────
+function doToggleSold(carId, isSold) {
+  const msg = isSold
+    ? 'นำรถคันนี้กลับเข้าสต็อก (พร้อมขาย)?'
+    : 'ยืนยันว่าขายรถคันนี้แล้ว? รถจะหลุดออกจากโชว์รูมทันที';
+  const label = isSold ? '↩️ คืนสต็อก' : '✅ ขายแล้ว';
+  const icon  = isSold ? '↩️' : '✅';
+
+  showConfirm(msg, label, icon, async () => {
+    const { error } = await sb
+      .from('cars')
+      .update({ status: isSold ? 'available' : 'sold' })
+      .eq('id', carId);
+
+    if (error) { toast('เกิดข้อผิดพลาด', 'err'); return; }
+    toast(isSold ? 'คืนสต็อกแล้ว' : 'บันทึกว่าขายแล้ว', 'ok');
+    await loadCars();
+  });
+}
+
+// ────────────────────────────────────────────────────────
+// DELETE CAR
+// ────────────────────────────────────────────────────────
+function doDeleteCar(carId, carName) {
+  showConfirm(
+    `ลบ "${carName}" ออกจากระบบถาวร?\nรูปภาพทั้งหมดจะถูกลบด้วย`,
+    '🗑️ ลบถาวร', '⚠️',
+    async () => {
+      // Remove photos from storage
+      const car = cars.find(c => c.id === carId);
+      if (car?.car_images?.length) {
+        const paths = car.car_images.map(img => storagePath(img.image_url)).filter(Boolean);
+        if (paths.length) await sb.storage.from(CONFIG.BUCKET).remove(paths);
+      }
+
+      const { error } = await sb.from('cars').delete().eq('id', carId);
+      if (error) { toast('ลบล้มเหลว: ' + error.message, 'err'); return; }
+      toast('ลบรถเรียบร้อย', 'ok');
+      await loadCars();
+    }
+  );
+}
+
+// ────────────────────────────────────────────────────────
+// IMAGE MANAGER MODAL
+// ────────────────────────────────────────────────────────
+async function openImageModal(carId) {
+  imgCarId = carId;
+  fileInput.value = '';
+  uploadProg.hidden = true;
+  openModal('img-modal');
+  await renderImageGrid();
+}
+
+async function renderImageGrid() {
+  if (!imgCarId) return;
+
+  const { data: imgs } = await sb
+    .from('car_images')
+    .select('*')
+    .eq('car_id', imgCarId)
+    .order('sort_order');
+
+  if (!imgs?.length) {
+    imageGrid.innerHTML = '<p style="color:var(--muted);font-size:13px;text-align:center;padding:16px;">ยังไม่มีรูป — อัปโหลดรูปได้เลย</p>';
+    return;
+  }
+
+  imageGrid.innerHTML = imgs.map((img, i) => `
+    <div class="img-item">
+      <img src="${img.image_url}" alt="รูปที่ ${i + 1}" loading="lazy">
+      ${i === 0 ? '<div class="img-cover-badge">📌 ปก</div>' : ''}
+      <div class="img-actions">
+        ${i > 0 ? `<button class="img-btn" data-img-action="up"  data-img-id="${img.id}">↑</button>` : ''}
+        ${i < imgs.length - 1 ? `<button class="img-btn" data-img-action="down" data-img-id="${img.id}">↓</button>` : ''}
+        <button class="img-btn del" data-img-action="del" data-img-id="${img.id}" data-img-url="${img.image_url}">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+// Event delegation for image actions
+imageGrid.addEventListener('click', async e => {
+  const btn = e.target.closest('[data-img-action]');
+  if (!btn) return;
+
+  const { imgAction, imgId, imgUrl } = btn.dataset;
+
+  if (imgAction === 'up')   await moveImage(imgId, -1);
+  if (imgAction === 'down') await moveImage(imgId,  1);
+  if (imgAction === 'del')  doDeleteImage(imgId, imgUrl);
+});
+
+async function moveImage(imageId, dir) {
+  const { data: imgs } = await sb
+    .from('car_images')
+    .select('*')
+    .eq('car_id', imgCarId)
+    .order('sort_order');
+
+  if (!imgs) return;
+
+  const idx  = imgs.findIndex(i => i.id === imageId);
+  const swap = idx + dir;
+  if (swap < 0 || swap >= imgs.length) return;
+
+  const [a, b] = [imgs[idx], imgs[swap]];
+  await Promise.all([
+    sb.from('car_images').update({ sort_order: b.sort_order }).eq('id', a.id),
+    sb.from('car_images').update({ sort_order: a.sort_order }).eq('id', b.id),
+  ]);
+
+  await renderImageGrid();
+}
+
+function doDeleteImage(imageId, imageUrl) {
+  showConfirm('ลบรูปนี้?', '🗑️ ลบรูป', '🖼️', async () => {
+    const path = storagePath(imageUrl);
+    if (path) await sb.storage.from(CONFIG.BUCKET).remove([path]);
+    await sb.from('car_images').delete().eq('id', imageId);
+    await renderImageGrid();
+    toast('ลบรูปแล้ว', 'ok');
+  });
+}
+
+// When image modal closes, refresh car list so cover image updates
+$('btn-img-done').addEventListener('click', async () => {
+  closeModal('img-modal');
+  await loadCars();
+});
+
+// ────────────────────────────────────────────────────────
+// FILE UPLOAD
+// ────────────────────────────────────────────────────────
+dropZone.addEventListener('click',     () => fileInput.click());
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('over');
+  handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+async function handleFiles(files) {
+  if (!imgCarId || !files?.length) return;
+
+  // Get next sort_order
+  const { data: existing } = await sb
+    .from('car_images')
+    .select('sort_order')
+    .eq('car_id', imgCarId)
+    .order('sort_order', { ascending: false })
+    .limit(1);
+
+  let nextOrder = (existing?.[0]?.sort_order ?? -1) + 1;
+
+  uploadProg.hidden = false;
+  const fileArr = Array.from(files);
+  let ok = 0, fail = 0;
+
+  for (const file of fileArr) {
+    uploadProg.textContent = `อัปโหลด ${ok + fail + 1} / ${fileArr.length}...`;
+
+    try {
+      const resized = await resizeImage(file, CONFIG.MAX_IMG_WIDTH, CONFIG.JPEG_QUALITY);
+      const ext     = resized.type === 'image/jpeg' ? 'jpg' : file.name.split('.').pop().toLowerCase();
+      const path    = `${imgCarId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+      const { error: upErr } = await sb.storage
+        .from(CONFIG.BUCKET)
+        .upload(path, resized, { contentType: resized.type });
+
+      if (upErr) throw upErr;
+
+      const { data: { publicUrl } } = sb.storage.from(CONFIG.BUCKET).getPublicUrl(path);
+
+      const { error: insErr } = await sb.from('car_images').insert({
+        car_id: imgCarId,
+        image_url: publicUrl,
+        sort_order: nextOrder++,
+      });
+
+      if (insErr) throw insErr;
+      ok++;
+    } catch (e) {
+      console.error('Upload failed:', e);
+      fail++;
+    }
+  }
+
+  uploadProg.hidden = true;
+  fileInput.value = '';
+
+  if (ok)   toast(`อัปโหลดสำเร็จ ${ok} รูป`, 'ok');
+  if (fail) toast(`ล้มเหลว ${fail} รูป`, 'err');
+
+  await renderImageGrid();
+}
+
+// Resize image using Canvas API (also corrects EXIF orientation on iOS Safari 15+)
+async function resizeImage(file, maxW, quality) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { naturalWidth: w, naturalHeight: h } = img;
+
+      if (w <= maxW) {
+        // No resize needed — return original if it's already small
+        resolve(file);
+        return;
+      }
+
+      const ratio = maxW / w;
+      w = maxW;
+      h = Math.round(h * ratio);
+
+      const canvas = document.createElement('canvas');
+      canvas.width  = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(
+        blob => resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })),
+        'image/jpeg', quality
+      );
+    };
+
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
+// ────────────────────────────────────────────────────────
+// MODAL HELPERS
+// ────────────────────────────────────────────────────────
+function openModal(id) {
+  $(id).hidden = false;
+  document.body.style.overflow = 'hidden';
+  $(id).querySelector('.modal-panel').scrollTop = 0;
+}
+
+function closeModal(id) {
+  $(id).hidden = true;
+  document.body.style.overflow = '';
+}
+
+// Close buttons (data-modal="modalId")
+document.querySelectorAll('[data-modal]').forEach(btn => {
+  btn.addEventListener('click', e => {
+    if (e.currentTarget.classList.contains('modal-close-btn') ||
+        e.currentTarget.classList.contains('btn-ghost') ||
+        e.currentTarget.id === 'btn-img-done') {
+      const target = e.currentTarget.dataset.modal;
+      if (target === 'img-modal') {
+        // img-modal close handled by btn-img-done listener separately
+        closeModal(target);
+        loadCars();
+      } else {
+        closeModal(target);
+      }
+    }
+  });
+});
+
+// Backdrop click closes modal
+['car-modal', 'img-modal'].forEach(id => {
+  $(id).addEventListener('click', e => {
+    if (e.target === $(id)) {
+      if (id === 'img-modal') loadCars();
+      closeModal(id);
+    }
+  });
+});
+
+// ────────────────────────────────────────────────────────
+// CONFIRM DIALOG
+// ────────────────────────────────────────────────────────
+function showConfirm(msg, okLabel = 'ยืนยัน', icon = '⚠️', callback) {
+  $('cf-icon').textContent  = icon;
+  $('cf-msg').textContent   = msg;
+  $('btn-cf-ok').textContent = okLabel;
+  cfCallback = callback;
+  $('confirm-overlay').hidden = false;
+}
+
+$('btn-cf-cancel').addEventListener('click', () => {
+  $('confirm-overlay').hidden = true;
+  cfCallback = null;
+});
+
+$('btn-cf-ok').addEventListener('click', async () => {
+  $('confirm-overlay').hidden = true;
+  if (cfCallback) await cfCallback();
+  cfCallback = null;
+});
+
+// ────────────────────────────────────────────────────────
+// TOAST
+// ────────────────────────────────────────────────────────
+function toast(msg, type = '') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  $('toast-wrap').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ────────────────────────────────────────────────────────
+// UTILS
+// ────────────────────────────────────────────────────────
+function storagePath(url) {
+  // Extract file path from Supabase public URL
+  // e.g. https://xxx.supabase.co/storage/v1/object/public/car-photos/abc/file.jpg
+  //   → abc/file.jpg
+  try {
+    const u = new URL(url);
+    const marker = `/object/public/${CONFIG.BUCKET}/`;
+    const idx = u.pathname.indexOf(marker);
+    return idx !== -1 ? u.pathname.slice(idx + marker.length) : null;
+  } catch {
+    return null;
+  }
+}
+</script>
+</body>
+</html>
