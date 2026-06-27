@@ -620,6 +620,7 @@
     <!-- Top bar -->
     <div class="top-bar">
       <button class="btn btn-amber" id="btn-add-car">+ เพิ่มรถ</button>
+        <button class="btn btn-ghost" id="btn-paste" title="วางข้อความประกาศรถแล้วแยกข้อมูลอัตโนมัติ">📋 วาง</button>
       <input class="form-input" type="search" id="search-q" placeholder="🔍 ค้นหายี่ห้อ รุ่น ทะเบียน...">
     </div>
 
@@ -774,6 +775,35 @@
 </div>
 
 
+<!-- ════════════════════ PASTE PARSER MODAL ════════════════════ -->
+<div class="modal-overlay" id="paste-modal" hidden>
+  <div class="modal-panel">
+    <div class="modal-header">
+      <h2>📋 วางข้อความรถ</h2>
+      <button class="modal-close-btn" data-modal="paste-modal">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+        วางข้อความประกาศรถจาก Facebook / LINE / อื่นๆ แล้วกด <strong>"✨ แยกข้อมูล"</strong><br>
+        ระบบจะดึง ยี่ห้อ รุ่น ปี ราคา ไมล์ เกียร์ รายละเอียด ให้อัตโนมัติ<br>
+        <span style="color:var(--accent);">⚠️ ปีที่เป็น พ.ศ. (เช่น 2567) จะแปลงเป็น ค.ศ. ให้อัตโนมัติ</span>
+      </p>
+      <div class="form-group">
+        <label class="form-label" for="paste-text">ข้อความประกาศ</label>
+        <textarea class="form-input" id="paste-text" style="min-height:200px;font-size:13px;" placeholder="วางข้อความที่นี่...&#10;&#10;ตัวอย่าง:&#10;🌺Toyota Fortuner 2.8 V AT ปี2016🌺&#10;📌เลขไมล์ 165,xxx Km.&#10;📌เครื่อง 2,800 ดีเซล&#10;📌เกียร์อัตโนมัติ&#10;❤️‍🔥ราคา 799,000 บาท❤️‍🔥"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="paste-plate">ทะเบียน (กรอกเพิ่มเองถ้ามี)</label>
+        <input class="form-input" type="text" id="paste-plate" placeholder="กข 1234 กทม.">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-modal="paste-modal">ยกเลิก</button>
+      <button class="btn btn-amber" id="btn-parse">✨ แยกข้อมูล</button>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════════════ CONFIRM DIALOG ════════════════════ -->
 <div id="confirm-overlay" hidden>
   <div class="confirm-card">
@@ -801,10 +831,10 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 // !! CONFIG — แก้ตรงนี้ก่อน deploy !!
 // ════════════════════════════════════════════════════════
 const CONFIG = {
-  SUPABASE_URL:     'https://trnnpesdupnmvriqodpo.supabase.co',   // Project URL
-  SUPABASE_KEY:     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRybm5wZXNkdXBubXZyaXFvZHBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NjI1MTQsImV4cCI6MjA5ODAzODUxNH0.Fyoals_-9p8x_qChIYUKb9VIVe7st0RQmmvouHKP8hc',                  // anon public key
+  SUPABASE_URL:     'https://YOUR_PROJECT_ID.supabase.co',   // Project URL
+  SUPABASE_KEY:     'YOUR_ANON_PUBLIC_KEY',                  // anon public key
   BUCKET:           'car-photos',
-  SHOP_NAME:        'UM Home Car',                        // แสดงใน header
+  SHOP_NAME:        'ชื่อร้านของคุณ',                        // แสดงใน header
   MAX_IMG_WIDTH:    1400,                                     // ย่อรูปก่อนอัปโหลด
   JPEG_QUALITY:     0.82,
 };
@@ -1408,8 +1438,136 @@ function toast(msg, type = '') {
 }
 
 // ────────────────────────────────────────────────────────
-// UTILS
+// PASTE PARSER
 // ────────────────────────────────────────────────────────
+$('btn-paste').addEventListener('click', () => {
+  $('paste-text').value = '';
+  $('paste-plate').value = '';
+  openModal('paste-modal');
+});
+
+$('btn-parse').addEventListener('click', () => {
+  const raw = $('paste-text').value.trim();
+  if (!raw) { toast('กรุณาวางข้อความก่อนครับ', 'err'); return; }
+
+  const parsed = parseCarText(raw);
+  if (parsed.plate_hint) {
+    // plate from paste-plate field takes priority
+  }
+  const manualPlate = $('paste-plate').value.trim();
+
+  if (!parsed.brand && !parsed.price) {
+    toast('แยกข้อมูลไม่สำเร็จ — ลองจัดรูปแบบข้อความใหม่ครับ', 'err');
+    return;
+  }
+
+  closeModal('paste-modal');
+  openCarModal(); // open blank form
+
+  if (parsed.brand)       $('f-brand').value      = parsed.brand;
+  if (parsed.model)       $('f-model').value      = parsed.model;
+  if (parsed.sub_model)   $('f-sub-model').value  = parsed.sub_model;
+  if (parsed.year)        $('f-year').value       = parsed.year;
+  if (parsed.mileage)     $('f-mileage').value    = parsed.mileage;
+  if (parsed.engine)      $('f-engine').value     = parsed.engine;
+  if (parsed.gear)        $('f-gear').value       = parsed.gear;
+  if (parsed.price)       $('f-price').value      = parsed.price;
+  if (parsed.description) $('f-desc').value       = parsed.description;
+  if (manualPlate)        $('f-plate').value      = manualPlate;
+
+  updatePriceFmt();
+
+  const count = Object.values(parsed).filter(v => v != null && v !== '').length;
+  toast(`แยกข้อมูลได้ ${count} ฟิลด์ — ตรวจสอบก่อนบันทึกด้วยนะครับ`, 'ok');
+});
+
+function parseCarText(raw) {
+  // Strip emojis + decorative chars, keep Thai + ASCII + punctuation
+  const stripEmoji = s => s
+    .replace(/[\u{1F000}-\u{1FFFF}\u{2300}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE00}-\u{FEFF}]/gu, '')
+    .replace(/[🌺❤️‍🔥⭐⏰📌✅💳🔄📋]/g, '')
+    .trim();
+
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  const result = {};
+
+  // ── First line → brand / model / sub_model / year ─────────
+  const firstClean = stripEmoji(lines[0] || '').replace(/\s+/g, ' ').trim();
+
+  // Year: ปีXXXX or ปี XXXX
+  const yearM = firstClean.match(/ปี\s*(\d{4})/);
+  if (yearM) {
+    let yr = parseInt(yearM[1]);
+    if (yr > 2500) yr -= 543;   // พ.ศ. → ค.ศ.
+    result.year = yr;
+  }
+
+  const namePart = firstClean.replace(/ปี\s*\d{4}/g, '').replace(/\s+/g, ' ').trim();
+  const words = namePart.split(/\s+/).filter(Boolean);
+  if (words[0]) result.brand     = words[0];
+  if (words[1]) result.model     = words[1];
+  if (words.length > 2) result.sub_model = words.slice(2).join(' ');
+
+  // ── Scan remaining lines ──────────────────────────────────
+  const descLines = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    // Clean line: remove bullet emojis / prefixes
+    const c = stripEmoji(lines[i])
+      .replace(/^[•·\-\s📌✅⭐⏰]+/, '')
+      .trim();
+    if (!c) continue;
+
+    // ── Mileage ────────────────────────────────────────────
+    if (/ไมล์/.test(c)) {
+      const mm = c.match(/([\d,]+)([,\s]*[xX?*]+)?/);
+      if (mm) {
+        let num = parseInt(mm[1].replace(/,/g, ''));
+        // "165,xxx" → xxx means hidden digits → treat as ×1000
+        const hasXxx = mm[2] && /[xX?*]/.test(mm[2]);
+        if (hasXxx && num < 1000) num *= 1000;
+        result.mileage = num;
+      }
+      descLines.push(c);
+      continue;
+    }
+
+    // ── Engine ─────────────────────────────────────────────
+    if (/เครื่อง/.test(c) && !result.engine) {
+      result.engine = c.replace(/เครื่อง\s*/, '').trim();
+      descLines.push(c);
+      continue;
+    }
+
+    // ── Gear ───────────────────────────────────────────────
+    if (/เกียร์/.test(c) && !result.gear) {
+      if (/อัตโนมัติ|Automatic/i.test(c))   result.gear = 'ออโต้';
+      else if (/ธรรมดา|Manual/i.test(c))    result.gear = 'ธรรมดา';
+      else if (/\bCVT\b/.test(c))           result.gear = 'CVT';
+      else if (/\bDCT\b/.test(c))           result.gear = 'DCT';
+      descLines.push(c);
+      continue;
+    }
+
+    // ── Price ──────────────────────────────────────────────
+    if (/ราคา/.test(c) && !result.price) {
+      const pm = c.match(/([\d,]+)/);
+      if (pm) result.price = parseInt(pm[1].replace(/,/g, ''));
+      continue; // ไม่ใส่ราคาในรายละเอียด
+    }
+
+    // ── Skip installment / promo lines ─────────────────────
+    if (/ฟรีดาวน์|ฟรีจัด|ฟรีโอน|ระยะการผ่อน/.test(c)) continue;
+    if (/^\d+\s*ปี\s*[\d,]+$/.test(c)) continue; // "4 ปี 20,070"
+
+    descLines.push(c);
+  }
+
+  if (descLines.length) result.description = descLines.join('\n');
+
+  return result;
+}
+
 function storagePath(url) {
   // Extract file path from Supabase public URL
   // e.g. https://xxx.supabase.co/storage/v1/object/public/car-photos/abc/file.jpg

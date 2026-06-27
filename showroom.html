@@ -23,9 +23,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --bg:#F7F4EF; --ink:#1C1A17; --muted:#8A8276; --line:#EDE7DD;
-  --card:#FFFFFF; --brand:#E8472B; --brand-2:#F4A23B; --green:#06C755;
-  --shadow:0 6px 22px rgba(28,26,23,.08); --shadow-lg:0 18px 50px rgba(28,26,23,.18);
+  --bg:#0c0c0c; --ink:#f0ede8; --muted:#706d66; --line:#272727;
+  --card:#161616; --brand:#dc2626; --brand-2:#f87171; --green:#06C755;
+  --shadow:0 6px 22px rgba(0,0,0,.45); --shadow-lg:0 18px 50px rgba(0,0,0,.7);
   --radius:18px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -206,6 +206,39 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .stats-btn-off{background:#fde8e6;color:#b42318;border:none;font-family:'Kanit',sans-serif;font-weight:600;padding:10px 16px;border-radius:11px;cursor:pointer}
 .stats-note{font-size:.78rem;color:#8A8276;line-height:1.4}
 .stats-empty{padding:18px 22px;color:#8A8276}
+/* ── DARK RED/BLACK PREMIUM OVERRIDE ────────────────────────── */
+body{background:var(--bg);color:var(--ink)}
+.hd{background:rgba(10,10,10,.97)!important;border-bottom:1px solid #2a2a2a!important;position:relative}
+.hd::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--brand) 40%,var(--brand-2) 60%,transparent)}
+.hd-call{background:#1a1a1a!important;color:#fff!important;border:1px solid #333!important}
+.hd-menu,.drawer-hd button{color:var(--ink)}
+.tools-card{background:rgba(10,10,10,.97)!important;border-bottom:1px solid #1e1e1e}
+.search input{background:#1a1a1a!important;color:var(--ink)!important;border-color:#2a2a2a!important}
+.search input::placeholder{color:#504e49}
+.chip{background:#1a1a1a!important;border-color:#2a2a2a!important;color:var(--ink)!important}
+.chip.on,.chips-sub .chip.on{background:var(--brand)!important;color:#fff!important;border-color:var(--brand)!important}
+.sort{background:#1a1a1a!important;border-color:#2a2a2a!important;color:var(--ink)!important}
+.card{border:1px solid #1e1e1e;transition:transform .16s ease,box-shadow .16s ease,border-color .2s}
+.card:hover{border-color:rgba(220,38,38,.5)!important;box-shadow:0 18px 50px rgba(220,38,38,.1)!important}
+.card-img{background:#1a1a1a!important}
+.card-go{background:#1a1a1a!important;border:1px solid #2a2a2a;color:var(--ink)}
+.skel .b{background:linear-gradient(90deg,#1a1a1a 25%,#232323 50%,#1a1a1a 75%)!important;background-size:200% 100%!important}
+.pager button{background:#1a1a1a!important;border-color:#2a2a2a!important;color:var(--ink)!important}
+.pager button.on{background:var(--brand)!important;border-color:var(--brand)!important;color:#fff!important}
+.spec{background:#1a1a1a!important;border-color:#2a2a2a!important}
+.inst{background:#1a1a1a!important;border-color:#2a2a2a!important}
+.desc{background:#1a1a1a!important;border-color:#2a2a2a!important;color:#a8a49f!important}
+.sheet{background:#111!important}
+.sh-thumbs img{opacity:.55}.sh-thumbs img.on{opacity:1}
+.bar{background:rgba(8,8,8,.99)!important;border-top:1px solid #2a2a2a!important}
+.cta-call{background:#1a1a1a!important}
+.dr-shop-cta .call{background:#1a1a1a!important;border-color:#2a2a2a!important;color:var(--ink)!important}
+.stats-total{background:#1a1a1a!important}
+.stats-live{background:#0d2718!important;color:#4ade80!important}
+.stat-row{border-bottom-color:#1e1e1e!important}
+.stat-views{color:#706d66!important}
+.setup{background:#161616!important;border-color:#2a2a2a!important}
+.setup code{background:#1a1a1a!important}
 </style>
 </head>
 <body>
@@ -283,11 +316,11 @@ const CONFIG = {
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRybm5wZXNkdXBubXZyaXFvZHBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NjI1MTQsImV4cCI6MjA5ODAzODUxNH0.Fyoals_-9p8x_qChIYUKb9VIVe7st0RQmmvouHKP8hc',
 
   // ติดต่อร้าน — แก้ให้เป็นของร้านใหม่
-  LINE_URL: 'https://line.me/R/ti/p/@umbk',   // ← LINE OA ร้านใหม่
-  PHONE:    '065-514-0450',                       // ← เบอร์ร้านใหม่
+  LINE_URL: 'https://line.me/R/ti/p/@XXXXXXX',   // ← LINE OA ร้านใหม่
+  PHONE:    '0XX-XXX-XXXX',                       // ← เบอร์ร้านใหม่
 
-  ADDRESS:    'อัมโฮมคาร์ เลขที่ 69 ถนนเพิ่มสิน คลองถนน เขตสายไหม กทม 10220',                  // ← ที่อยู่จริง
-  MAP_URL:    'https://goo.gl/maps/gw6EJAzWFE72',    // ← ลิงก์ Google Maps
+  ADDRESS:    'ที่อยู่ร้าน ...',                  // ← ที่อยู่จริง
+  MAP_URL:    'https://maps.app.goo.gl/XXXXX',    // ← ลิงก์ Google Maps
   HOURS:      'เปิดทุกวัน 08:00 - 19:00 น.',
   HIGHLIGHTS: ['✅ ตรวจสภาพทุกคัน', '💳 จัดไฟแนนซ์ได้', '🔄 รับเทิร์นรถเก่า', '📋 ฟรีโอน ฟรีค่าจัด'],
 
