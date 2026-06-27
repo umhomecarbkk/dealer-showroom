@@ -343,7 +343,8 @@ function lineCarUrl(c) {
   if (!c || !id || id[0] !== '@') return CONFIG.LINE_URL;
   const plate = String(c.license_plate || '').trim();
   const msg = 'สนใจรถคันนี้ครับ/ค่ะ 🚗\n' + carName(c) + (c.year ? ' ปี ' + c.year : '') + (plate ? '\nทะเบียน ' + plate : '') + '\nราคา ' + (baht(c.price) || 'สอบถาม') + '\n(สอบถามจากหน้าเว็บโชว์รูม)';
-  return 'https://line.me/R/oaMessage/' + id + '?text=' + encodeURIComponent(msg);
+  window._lineCarMsg = msg;
+  return CONFIG.LINE_URL;
 }
 let ALL = [], VIEW = [], brand = 'all', model = 'all', sort = 'new', query = '', page = 1, expanded = null, priceRange = 'all';
 const PAGE_SIZE = 40;
@@ -681,7 +682,14 @@ function renderSheet() {
     $('#shNext').addEventListener('click', () => { curIdx = (curIdx + 1) % D; gallery(D); });
     $('#sheet').querySelectorAll('.sheet-thumbs img').forEach((t) => t.addEventListener('click', () => { curIdx = Number(t.dataset.k); gallery(D); }));
   }
-  $('#sheet').querySelectorAll('[data-line]').forEach((b) => b.addEventListener('click', () => window.open(lineCarUrl(cur), '_blank')));
+  $('#sheet').querySelectorAll('[data-line]').forEach((b) => b.addEventListener('click', () => {
+    lineCarUrl(cur);
+    const msg = window._lineCarMsg;
+    if (msg && navigator.clipboard) {
+      navigator.clipboard.writeText(msg).then(() => showToast('📋 คัดลอกข้อมูลรถแล้ว — วางใน LINE ได้เลย')).catch(() => {});
+    }
+    window.open(CONFIG.LINE_URL, '_blank');
+  }));
   $('#sheet').querySelectorAll('[data-call]').forEach((b) => b.addEventListener('click', () => { location.href = 'tel:' + CONFIG.PHONE.replace(/[^0-9+]/g, ''); }));
 }
 $('#ov').addEventListener('click', (e) => { if (e.target.id === 'ov') closeDetail(); });
