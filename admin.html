@@ -1681,11 +1681,10 @@ function parseCarText(raw) {
       continue;
     }
 
-    // ── Price ──────────────────────────────────────────────
-    if (/ราคา/.test(c) && !result.price) {
-      const pm = c.match(/([\d,]+)/);
-      if (pm) result.price = parseInt(pm[1].replace(/,/g, ''));
-      continue; // ไม่ใส่ราคาในรายละเอียด
+    // ── Price — รองรับ "ราคา / เพียง / ขายเพียง / ราคาพิเศษ" ─────
+    if ((/ราคา|เพียง|ขาย/.test(c)) && !result.price) {
+      const pm = c.match(/([\d,]{4,})/);   // ต้องมีตัวเลขอย่างน้อย 4 หลัก
+      if (pm) { result.price = parseInt(pm[1].replace(/,/g, '')); continue; }
     }
 
     // ── Installments: "4 ปี 20,070" or "ค่างวด 4 ปี 20,070" ────
