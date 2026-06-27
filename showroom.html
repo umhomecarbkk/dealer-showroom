@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>อัมโฮมคาร์ · รถมือสองคุณภาพ</title>
+<meta name="description" content="รถมือสองคัดคุณภาพ พร้อมส่งมอบ · ดูรถทั้งหมด สอบถามผ่าน LINE หรือโทรได้เลย">
+<meta property="og:type" content="website">
+<meta property="og:title" content="อัมโฮมคาร์ · รถมือสองคุณภาพ">
+<meta property="og:description" content="รถมือสองคัดคุณภาพ พร้อมส่งมอบ · ดูรถทั้งหมด สอบถาม LINE/โทรได้เลย">
+<meta property="og:image" content="https://raw.githubusercontent.com/umhomecar/logoimages/main/88.png">
+<meta property="og:locale" content="th_TH">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="อัมโฮมคาร์ · รถมือสองคุณภาพ">
+<meta name="twitter:description" content="รถมือสองคัดคุณภาพ พร้อมส่งมอบ · สอบถาม LINE/โทรได้เลย">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/umhomecar/logoimages/main/88.png">
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/umhomecar/logoimages/main/88.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#F7F4EF; --ink:#1C1A17; --muted:#8A8276; --line:#EDE7DD;
+  --card:#FFFFFF; --brand:#E8472B; --brand-2:#F4A23B; --green:#06C755;
+  --shadow:0 6px 22px rgba(28,26,23,.08); --shadow-lg:0 18px 50px rgba(28,26,23,.18);
+  --radius:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px;border-radius:6px}
+.hd{position:sticky;top:0;z-index:40;background:rgba(251,228,222,.92);backdrop-filter:blur(12px);border-bottom:1px solid #f3d3ca}
+.hd-in{max-width:1180px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:12px}
+.hd-logo{width:42px;height:42px;border-radius:11px;box-shadow:var(--shadow);background:#fff;padding:3px}
+.hd-name{font-family:'Kanit',sans-serif;font-weight:700;font-size:1.18rem;letter-spacing:.2px;line-height:1.1}
+.hd-name small{display:block;font-family:'Sarabun';font-weight:400;font-size:.72rem;color:var(--muted);letter-spacing:0}
+.hd-actions{margin-left:auto;display:flex;gap:8px}
+.hd-btn{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:.92rem;padding:9px 16px;border-radius:999px;transition:transform .12s ease,box-shadow .12s ease}
+.hd-btn:active{transform:scale(.96)}
+.hd-line{background:var(--green);color:#fff}
+.hd-call{background:var(--ink);color:#fff}
+.hd-btn svg{width:17px;height:17px}
+.hd-menu{font-size:1.45rem;line-height:1;padding:5px 11px;border-radius:11px;color:var(--ink);transition:background .14s}
+.hd-menu:hover{background:rgba(0,0,0,.05)}
+.active-filter{flex:1;min-width:0}
+.af-chip{display:inline-flex;align-items:center;gap:9px;background:var(--ink);color:#fff;font-family:'Kanit',sans-serif;font-weight:600;font-size:.86rem;padding:8px 15px;border-radius:999px;max-width:100%}
+.af-chip span{opacity:.75;font-size:1rem}
+.drawer-ov{position:fixed;inset:0;z-index:55;background:rgba(28,26,23,.5);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s}
+.drawer-ov.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;left:0;bottom:0;z-index:56;width:300px;max-width:84vw;background:var(--bg);box-shadow:var(--shadow-lg);transform:translateX(-100%);transition:transform .28s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;overflow:hidden}
+.drawer.show{transform:translateX(0)}
+.drawer-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line);font-family:'Kanit',sans-serif;font-weight:600;font-size:1.05rem}
+.drawer-hd button{font-size:1.15rem;width:34px;height:34px;border-radius:50%;display:grid;place-items:center}
+.drawer-hd button:hover{background:rgba(0,0,0,.05)}
+.drawer-body{flex:1;overflow-y:auto;padding:6px 0 30px}
+.dr-all,.dr-brand,.dr-model{width:100%;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:'Sarabun',sans-serif;font-size:.98rem;color:var(--ink);padding:12px 18px;transition:background .12s}
+.dr-all{font-family:'Kanit',sans-serif;font-weight:600;border-bottom:1px solid var(--line)}
+.dr-brand{font-weight:600}
+.dr-all:hover,.dr-brand:hover,.dr-model:hover{background:rgba(0,0,0,.04)}
+.dr-all.on,.dr-brand.on{color:var(--brand)}
+.dr-meta{color:var(--muted);font-size:.85rem;font-weight:400;display:flex;align-items:center;gap:6px}
+.dr-meta .chev{font-style:normal;display:inline-block;transition:transform .2s}
+.dr-group.open .dr-meta .chev{transform:rotate(90deg)}
+.dr-models{display:none;background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.dr-group.open .dr-models{display:block}
+.dr-model{padding-left:36px;font-size:.92rem}
+.dr-model>span{color:var(--muted);font-size:.82rem}
+.dr-model.on{color:var(--brand);font-weight:600;background:#fff7f4}
+@media(max-width:680px){.hd-actions{display:none}}
+.hero{max-width:1180px;margin:0 auto;padding:30px 18px 8px}
+.hero h1{font-family:'Kanit',sans-serif;font-weight:700;font-size:clamp(1.7rem,5vw,2.6rem);line-height:1.12;letter-spacing:.3px}
+.hero h1 .accent{background:linear-gradient(100deg,var(--brand),var(--brand-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--muted);margin-top:8px;font-size:1.02rem}
+.hero .cnt{display:inline-flex;align-items:center;gap:7px;margin-top:14px;background:#fff;border:1px solid var(--line);padding:7px 15px;border-radius:999px;font-weight:600;font-size:.9rem;box-shadow:var(--shadow)}
+.hero .cnt b{color:var(--brand);font-family:'Kanit';font-size:1.05rem}
+.tools{max-width:1180px;margin:18px auto 0;padding:0 18px;position:sticky;top:67px;z-index:30}
+.tools-card{background:rgba(247,244,239,.92);backdrop-filter:blur(8px);padding:6px 0 10px}
+.search{position:relative}
+.search input{width:100%;padding:14px 16px 14px 46px;border:1.5px solid var(--line);border-radius:14px;background:#fff;font-size:1rem;font-family:inherit;box-shadow:var(--shadow);transition:border-color .15s}
+.search input:focus{border-color:var(--brand);outline:none}
+.search .ic{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:1.1rem;opacity:.5}
+.row{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;flex:1;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;padding:8px 15px;border-radius:999px;background:#fff;border:1.5px solid var(--line);font-weight:600;font-size:.88rem;color:var(--ink);transition:all .14s}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.sort{padding:9px 14px;border:1.5px solid var(--line);border-radius:999px;background:#fff;font-family:inherit;font-weight:600;font-size:.86rem;color:var(--ink);cursor:pointer}
+.chips-sub{margin-top:9px}
+.chips-sub .chip{font-size:.84rem;padding:7px 13px}
+.chips-sub .chip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.pager{max-width:1180px;margin:0 auto 90px;padding:4px 18px 0;display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap}
+.pager button{min-width:40px;height:40px;padding:0 13px;border:1.5px solid var(--line);background:#fff;border-radius:12px;font-family:'Kanit',sans-serif;font-weight:600;font-size:.94rem;color:var(--ink);transition:all .14s}
+.pager button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pager button:disabled{opacity:.38;cursor:default}
+.grid{max-width:1180px;margin:14px auto 90px;padding:0 18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:18px}
+.card{background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:transform .16s ease,box-shadow .16s ease;display:flex;flex-direction:column;text-align:left;width:100%}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.card-img{position:relative;aspect-ratio:4/3;background:#efe9e0;overflow:hidden}
+.card-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
+.card:hover .card-img img{transform:scale(1.05)}
+.card-img .noimg{width:100%;height:100%;display:grid;place-items:center;font-size:2.4rem;opacity:.4}
+.card-img .pics{position:absolute;right:9px;bottom:9px;background:rgba(28,26,23,.72);color:#fff;font-size:.74rem;font-weight:600;padding:3px 9px;border-radius:999px;backdrop-filter:blur(4px)}
+.badges{position:absolute;left:9px;top:9px;display:flex;flex-direction:column;gap:5px;align-items:flex-start;z-index:1}
+.badges .hot{background:var(--brand);color:#fff;font-family:'Kanit',sans-serif;font-weight:700;font-size:.74rem;padding:4px 11px;border-radius:999px;box-shadow:var(--shadow)}
+.badges .sale{background:#fff;color:var(--brand);border:1.5px solid var(--brand);font-family:'Kanit',sans-serif;font-weight:600;font-size:.72rem;padding:3px 10px;border-radius:999px}
+.price .old{font-family:'Sarabun',sans-serif;font-size:.85rem;color:var(--muted);text-decoration:line-through;font-weight:400;margin-left:7px;display:inline}
+.sh-price .old{font-family:'Sarabun',sans-serif;font-size:1.1rem;color:var(--muted);text-decoration:line-through;font-weight:400;margin-left:9px}
+.sh-hot{display:inline-block;background:var(--brand);color:#fff;font-family:'Kanit',sans-serif;font-weight:700;font-size:.82rem;padding:4px 12px;border-radius:999px;margin-bottom:8px}
+.card-bd{padding:13px 15px 15px;display:flex;flex-direction:column;gap:7px;flex:1}
+.card-nm{font-family:'Kanit',sans-serif;font-weight:600;font-size:1.02rem;line-height:1.25}
+.card-meta{color:var(--muted);font-size:.84rem;display:flex;gap:8px;flex-wrap:wrap}
+.card-meta span{display:inline-flex;align-items:center;gap:4px}
+.card-ft{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;padding-top:6px}
+.price{font-family:'Kanit',sans-serif;font-weight:700;font-size:1.32rem;color:var(--brand);line-height:1}
+.price small{font-family:'Sarabun';font-weight:400;font-size:.7rem;color:var(--muted);display:block}
+.card-go{font-size:.82rem;font-weight:600;color:var(--ink);background:var(--bg);padding:8px 13px;border-radius:10px;white-space:nowrap}
+.state{max-width:1180px;margin:60px auto;padding:0 18px;text-align:center;color:var(--muted)}
+.state .em{font-size:3rem;margin-bottom:10px}
+.state h3{font-family:'Kanit';color:var(--ink);margin-bottom:6px}
+.skel{background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.skel .b{background:linear-gradient(90deg,#efe9e0 25%,#f6f1ea 50%,#efe9e0 75%);background-size:200% 100%;animation:sh 1.3s infinite}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.ov{position:fixed;inset:0;z-index:60;background:rgba(28,26,23,.6);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
+.ov.show{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:760px;max-height:94vh;border-radius:24px 24px 0 0;overflow-y:auto;box-shadow:var(--shadow-lg);animation:up .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:translateY(0);opacity:1}}
+@media(min-width:760px){.ov{align-items:center}.sheet{border-radius:24px}}
+.sh-hero{position:relative;aspect-ratio:16/10;background:#000;overflow:hidden}
+.sh-hero img{width:100%;height:100%;object-fit:cover}
+.sh-x{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.92);font-size:1.2rem;display:grid;place-items:center;box-shadow:var(--shadow);z-index:2}
+.sh-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.85);font-size:1.3rem;display:grid;place-items:center;box-shadow:var(--shadow);z-index:2}
+.sh-nav.prev{left:10px}.sh-nav.next{right:10px}
+.sh-count{position:absolute;bottom:12px;right:12px;background:rgba(28,26,23,.7);color:#fff;font-size:.78rem;padding:4px 11px;border-radius:999px}
+.sh-thumbs{display:flex;gap:7px;overflow-x:auto;padding:11px 16px;scrollbar-width:none}
+.sh-thumbs::-webkit-scrollbar{display:none}
+.sh-thumbs img{width:62px;height:48px;object-fit:cover;border-radius:9px;cursor:pointer;flex-shrink:0;border:2.5px solid transparent;opacity:.65;transition:all .15s}
+.sh-thumbs img.on{border-color:var(--brand);opacity:1}
+.sh-bd{padding:4px 20px 20px}
+.sh-nm{font-family:'Kanit',sans-serif;font-weight:700;font-size:1.45rem;line-height:1.2}
+.sh-price{font-family:'Kanit',sans-serif;font-weight:700;font-size:2rem;color:var(--brand);margin:6px 0 16px}
+.specs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+@media(min-width:520px){.specs{grid-template-columns:repeat(3,1fr)}}
+.spec{background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px 13px}
+.spec span{display:block;color:var(--muted);font-size:.74rem;margin-bottom:2px}
+.spec b{font-weight:600;font-size:.98rem}
+.inst{background:#fff;border:1px solid var(--line);border-radius:13px;padding:13px 15px;margin-bottom:16px}
+.inst-h{font-family:'Kanit';font-weight:600;font-size:.95rem;margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.inst-row{display:flex;gap:8px;flex-wrap:wrap}
+.inst-row .it{background:var(--bg);border-radius:10px;padding:8px 12px;font-size:.86rem;font-weight:600}
+.inst-row .it b{color:var(--brand);font-family:'Kanit'}
+.desc{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px 16px;font-size:.92rem;color:#4a463f;margin-bottom:16px;max-height:230px;overflow-y:auto}
+.cta-row{display:flex;gap:10px}
+.cta{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:'Kanit';font-weight:600;font-size:1.05rem;padding:15px;border-radius:14px;transition:transform .12s}
+.cta:active{transform:scale(.97)}
+.cta-line{background:var(--green);color:#fff}
+.cta-call{background:var(--ink);color:#fff}
+.cta-tiktok{width:100%;margin-bottom:10px;background:#000;color:#fff;text-decoration:none}
+.tik-pip{position:absolute;top:8px;right:8px;background:#000;color:#fff;font-size:.85rem;width:27px;height:27px;border-radius:50%;display:grid;place-items:center;box-shadow:var(--shadow);z-index:2}
+.cta svg{width:20px;height:20px}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:none;gap:10px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:rgba(247,244,239,.95);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+.bar .cta{font-size:1rem;padding:13px}
+@media(max-width:680px){.bar{display:flex}.grid{margin-bottom:84px}}
+.foot{text-align:center;color:var(--muted);font-size:.8rem;padding:24px 18px 30px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.setup{max-width:620px;margin:60px auto;padding:26px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.setup h3{font-family:'Kanit';margin-bottom:10px}
+.setup code{background:var(--bg);padding:2px 7px;border-radius:6px;font-size:.85rem;color:var(--brand)}
+.setup ol{margin:12px 0 0 20px;line-height:1.9}
+.highlights{max-width:1180px;margin:16px auto 0;padding:0 18px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.highlights::-webkit-scrollbar{display:none}
+.highlights span{white-space:nowrap;background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 15px;font-size:.86rem;font-weight:600;color:var(--ink);box-shadow:var(--shadow)}
+.drawer-foot{flex:none;border-top:1px solid var(--line);background:#fff;padding:14px 18px 18px}
+.dr-shop-name{font-family:'Kanit',sans-serif;font-weight:700;font-size:1rem;margin-bottom:8px}
+.dr-shop-line{display:flex;gap:7px;color:#4a463f;font-size:.84rem;line-height:1.5;margin-bottom:6px}
+.dr-shop-line span{flex:none}
+.dr-shop-cta{display:flex;gap:7px;margin-top:11px}
+.dr-shop-cta a{flex:1;text-align:center;font-family:'Kanit',sans-serif;font-weight:600;font-size:.86rem;padding:10px 6px;border-radius:11px;text-decoration:none}
+.dr-shop-cta .map{background:var(--ink);color:#fff;flex:1.3}
+.dr-shop-cta .line{background:var(--green);color:#fff}
+.dr-shop-cta .call{background:var(--bg);color:var(--ink);border:1.5px solid var(--line)}
+.sh-share{position:absolute;top:12px;left:12px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.92);font-size:1.05rem;display:grid;place-items:center;box-shadow:var(--shadow);z-index:2}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;font-family:'Kanit',sans-serif;font-weight:600;font-size:.92rem;padding:11px 20px;border-radius:999px;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:680px){.toast{bottom:90px}}
+#statsBtn{position:fixed;left:16px;bottom:16px;width:46px;height:46px;border-radius:50%;background:var(--ink);color:#fff;font-size:1.2rem;display:none;place-items:center;box-shadow:var(--shadow-lg);z-index:70;border:none;cursor:pointer}
+.stats-sheet{max-width:560px}
+.stats-hd{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 12px}
+.stats-hd h2{font-family:'Kanit',sans-serif;font-size:1.3rem;font-weight:700}
+.stats-hd small{font-weight:400;color:#8A8276;font-size:.8rem}
+.stats-live,.stats-total{margin:0 22px 10px;padding:13px 16px;border-radius:13px;font-weight:600;font-family:'Kanit',sans-serif}
+.stats-live{background:#e6f6ec;color:#137a3f}
+.stats-total{background:var(--bg);color:var(--ink)}
+.stats-sheet h3{font-family:'Kanit',sans-serif;font-weight:700;margin:16px 22px 8px}
+#statList{padding:0 14px 8px}
+.stat-row{display:flex;align-items:center;gap:11px;width:100%;background:none;border:none;border-bottom:1px solid var(--line);padding:9px 8px;cursor:pointer;text-align:left}
+.stat-rank{font-family:'Kanit',sans-serif;font-weight:700;color:#E8472B;width:22px;flex:none;text-align:center}
+.stat-row img{width:54px;height:40px;object-fit:cover;border-radius:8px;flex:none;background:var(--line)}
+.stat-name{flex:1;font-size:.92rem;color:var(--ink);font-weight:500;line-height:1.3}
+.stat-views{flex:none;font-weight:700;font-size:.9rem;color:#4a463f}
+.stats-foot{padding:14px 22px 22px;display:flex;flex-direction:column;gap:7px;align-items:flex-start}
+.stats-btn-off{background:#fde8e6;color:#b42318;border:none;font-family:'Kanit',sans-serif;font-weight:600;padding:10px 16px;border-radius:11px;cursor:pointer}
+.stats-note{font-size:.78rem;color:#8A8276;line-height:1.4}
+.stats-empty{padding:18px 22px;color:#8A8276}
+</style>
+</head>
+<body>
+<header class="hd">
+  <div class="hd-in">
+    <button class="hd-menu" id="menuBtn" aria-label="เมนูยี่ห้อ/รุ่น">☰</button>
+    <img class="hd-logo" id="hdLogo" alt="โลโก้ร้าน">
+    <div class="hd-name" id="hdName">—</div>
+    <div class="hd-actions">
+      <button class="hd-btn hd-line" data-line><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.64 2 10.1c0 4 3.55 7.34 8.35 7.97.32.07.77.21.88.49.1.25.07.64.03.9l-.14.86c-.04.25-.2 1 .87.54s5.79-3.41 7.9-5.84C21.3 13.5 22 11.88 22 10.1 22 5.64 17.52 2 12 2z"/></svg>LINE</button>
+      <button class="hd-btn hd-call" data-call><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.5 21 3 13.5 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z"/></svg>โทร</button>
+    </div>
+  </div>
+</header>
+<main id="app">
+  <section class="hero">
+    <h1>รถมือสองคุณภาพ<br><span class="accent">คัดมาให้แล้ว</span> พร้อมส่งมอบ</h1>
+    <p>เลือกชมรถทั้งหมดของเรา · สนใจคันไหนทักได้เลย</p>
+    <div class="cnt" id="heroCount" hidden>🚗 มีรถ <b id="cntNum">0</b> คันให้เลือก</div>
+  </section>
+
+  <div class="tools" id="tools" hidden>
+    <div class="tools-card">
+      <div class="search">
+        <span class="ic">🔍</span>
+        <input id="q" type="search" placeholder="ค้นหา ยี่ห้อ / รุ่น / ปี / ราคา…" autocomplete="off">
+      </div>
+      <div class="row">
+        <div class="active-filter" id="activeFilter" hidden></div>
+        <select class="sort" id="priceRange">
+          <option value="all">ทุกราคา</option>
+          <option value="0-300000">ต่ำกว่า 3 แสน</option>
+          <option value="300000-500000">3 - 5 แสน</option>
+          <option value="500000-700000">5 - 7 แสน</option>
+          <option value="700000-1000000">7 แสน - 1 ล้าน</option>
+          <option value="1000000-">1 ล้านขึ้นไป</option>
+        </select>
+        <select class="sort" id="sort">
+          <option value="new">ใหม่ล่าสุด</option>
+          <option value="plow">ราคาต่ำ → สูง</option>
+          <option value="phigh">ราคาสูง → ต่ำ</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="pager" id="pager"></div>
+</main>
+<div class="bar">
+  <button class="cta cta-line" data-line><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.64 2 10.1c0 4 3.55 7.34 8.35 7.97.32.07.77.21.88.49.1.25.07.64.03.9l-.14.86c-.04.25-.2 1 .87.54s5.79-3.41 7.9-5.84C21.3 13.5 22 11.88 22 10.1 22 5.64 17.52 2 12 2z"/></svg>แชท LINE</button>
+  <button class="cta cta-call" data-call><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.5 21 3 13.5 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z"/></svg>โทรเลย</button>
+</div>
+<div class="drawer-ov" id="drawerOv"></div>
+<aside class="drawer" id="drawer" aria-label="เมนูยี่ห้อและรุ่น">
+  <div class="drawer-hd"><span>🗂️ เลือกยี่ห้อ / รุ่น</span><button id="drawerX" aria-label="ปิดเมนู">✕</button></div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-foot" id="drawerFoot"></div>
+</aside>
+<div class="toast" id="toast"></div>
+<button id="statsBtn" title="สถิติร้าน (เฉพาะเจ้าของ)" aria-label="สถิติร้าน">📊</button>
+<div class="ov" id="statsOv"><div class="sheet stats-sheet" id="statsSheet"></div></div>
+<div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
+<footer class="foot" id="foot"></footer>
+<script>
+const CONFIG = {
+  // ════════════════════════════════════════
+  // !! แก้ตรงนี้ก่อน deploy !!
+  // ════════════════════════════════════════
+
+  SHOP_NAME:  'UM Home Car',            // ← ชื่อร้าน (แสดงใน header)
+  LOGO_URL:   'https://raw.githubusercontent.com/umhomecar/logoimages/main/88.png',  // ← URL โลโก้ร้าน
+
+  // Supabase
+  SUPABASE_URL:      'https://trnnpesdupnmvriqodpo.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRybm5wZXNkdXBubXZyaXFvZHBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NjI1MTQsImV4cCI6MjA5ODAzODUxNH0.Fyoals_-9p8x_qChIYUKb9VIVe7st0RQmmvouHKP8hc',
+
+  // ติดต่อร้าน — แก้ให้เป็นของร้านใหม่
+  LINE_URL: 'https://line.me/R/ti/p/@XXXXXXX',   // ← LINE OA ร้านใหม่
+  PHONE:    '0XX-XXX-XXXX',                       // ← เบอร์ร้านใหม่
+
+  ADDRESS:    'ที่อยู่ร้าน ...',                  // ← ที่อยู่จริง
+  MAP_URL:    'https://maps.app.goo.gl/XXXXX',    // ← ลิงก์ Google Maps
+  HOURS:      'เปิดทุกวัน 08:00 - 19:00 น.',
+  HIGHLIGHTS: ['✅ ตรวจสภาพทุกคัน', '💳 จัดไฟแนนซ์ได้', '🔄 รับเทิร์นรถเก่า', '📋 ฟรีโอน ฟรีค่าจัด'],
+
+  // 🔑 รหัสลับเจ้าของ — เปิดสถิติด้วยลิงก์  เว็บคุณ.com/?stats=รหัสนี้
+  OWNER_KEY: 'myshop2024',   // ← เปลี่ยนเป็นรหัสที่คาดเดาไม่ได้
+
+  BRANCHES: {},   // ไม่ใช้ระบบสาขา
+};
+
+// ── สลับข้อมูลติดต่อตามสาขา (อ่านจากลิงก์ ?b=คีย์) ──────────────────────────────
+(function applyBranchFromUrl() {
+  const key = new URLSearchParams(location.search).get('b');
+  const b = key && CONFIG.BRANCHES && CONFIG.BRANCHES[key];
+  if (!b) return;
+  ['SHOP_NAME', 'LINE_URL', 'PHONE', 'ADDRESS', 'MAP_URL', 'HOURS', 'LOGO_URL'].forEach((k) => {
+    if (b[k] != null && b[k] !== '') CONFIG[k] = b[k];
+  });
+})();
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const baht = (n) => (n == null || n === '') ? null : '฿' + Number(n).toLocaleString('th-TH');
+const carName = (c) => [c.brand, c.model, c.sub_model].filter(Boolean).join(' ') || 'รถยนต์';
+function lineOaId() { return (CONFIG.LINE_URL.split('/').pop() || '').trim(); }
+function lineCarUrl(c) {
+  const id = lineOaId();
+  if (!c || !id || id[0] !== '@') return CONFIG.LINE_URL;
+  const plate = String(c.license_plate || '').trim();
+  const msg = 'สนใจรถคันนี้ครับ/ค่ะ 🚗\n' + carName(c) + (c.year ? ' ปี ' + c.year : '') + (plate ? '\nทะเบียน ' + plate : '') + '\nราคา ' + (baht(c.price) || 'สอบถาม') + '\n(สอบถามจากหน้าเว็บโชว์รูม)';
+  return 'https://line.me/R/oaMessage/' + id + '/?' + encodeURIComponent(msg);
+}
+let ALL = [], VIEW = [], brand = 'all', model = 'all', sort = 'new', query = '', page = 1, expanded = null, priceRange = 'all';
+const PAGE_SIZE = 40;
+let cur = null, curIdx = 0;
+let db = null, presenceChannel = null, liveCount = 0;
+const viewedThisSession = new Set();
+const _params = new URLSearchParams(location.search);
+const _branchKey = _params.get('b') || '';
+const _branchQS = _branchKey ? '?b=' + encodeURIComponent(_branchKey) : '';
+const _openStatsOnLoad = _params.get('stats') === CONFIG.OWNER_KEY || _params.get('owner') === CONFIG.OWNER_KEY;
+function isOwner() { try { return localStorage.getItem('umhome_owner') === '1'; } catch (e) { return false; } }
+function setOwner(on) { try { on ? localStorage.setItem('umhome_owner', '1') : localStorage.removeItem('umhome_owner'); } catch (e) {} }
+if (_openStatsOnLoad) setOwner(true);
+async function countView(c) {
+  if (!db || !c || isOwner() || viewedThisSession.has(c.id)) return;
+  viewedThisSession.add(c.id);
+  try { await db.rpc('bump_car_view', { p_car_id: String(c.id) }); } catch (e) {}
+}
+$('#hdLogo').src = CONFIG.LOGO_URL;
+$('#hdName').innerHTML = esc(CONFIG.SHOP_NAME) + '<small>รถมือสองคุณภาพ · ส่งมอบพร้อมใช้</small>';
+$('#foot').textContent = '© ' + new Date().getFullYear() + ' ' + CONFIG.SHOP_NAME + ' · รถทุกคันตรวจสภาพก่อนส่งมอบ';
+$('#drawerFoot').innerHTML = '<div class="dr-shop-name">📍 ' + esc(CONFIG.SHOP_NAME) + '</div>' +
+  (CONFIG.ADDRESS ? '<div class="dr-shop-line"><span>🏠</span>' + esc(CONFIG.ADDRESS) + '</div>' : '') +
+  (CONFIG.HOURS ? '<div class="dr-shop-line"><span>🕐</span>' + esc(CONFIG.HOURS) + '</div>' : '') +
+  '<div class="dr-shop-cta">' +
+  (CONFIG.MAP_URL ? '<a class="map" href="' + esc(CONFIG.MAP_URL) + '" target="_blank" rel="noopener">🗺️ นำทาง</a>' : '') +
+  '<a class="line" href="' + esc(CONFIG.LINE_URL) + '" target="_blank" rel="noopener">LINE</a>' +
+  '<a class="call" href="tel:' + esc(CONFIG.PHONE.replace(/[^0-9+]/g, '')) + '">โทร</a>' +
+  '</div>';
+let toastT;
+function showToast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200); }
+function shareCar(c) {
+  const url = location.origin + location.pathname + '?car=' + encodeURIComponent(c.id) + (_branchKey ? '&b=' + encodeURIComponent(_branchKey) : '');
+  if (navigator.share) { navigator.share({ title: carName(c), text: carName(c) + (c.price != null ? ' ราคา ' + baht(c.price) : ''), url }).catch(() => {}); }
+  else if (navigator.clipboard) { navigator.clipboard.writeText(url).then(() => showToast('คัดลอกลิงก์แล้ว ✓')).catch(() => showToast('ลิงก์: ' + url)); }
+  else showToast('ลิงก์: ' + url);
+}
+function openCarById(id) {
+  const c = ALL.find((x) => String(x.id) === String(id));
+  if (!c) return;
+  cur = c; curIdx = 0; renderSheet();
+  $('#ov').classList.add('show'); document.body.style.overflow = 'hidden';
+  countView(c);
+}
+document.querySelectorAll('[data-line]').forEach((b) => b.addEventListener('click', () => window.open(CONFIG.LINE_URL, '_blank')));
+document.querySelectorAll('[data-call]').forEach((b) => b.addEventListener('click', () => { location.href = 'tel:' + CONFIG.PHONE.replace(/[^0-9+]/g, ''); }));
+function skeletons() {
+  $('#grid').innerHTML = Array.from({ length: 8 }).map(() => '<div class="skel"><div class="b" style="aspect-ratio:4/3"></div><div style="padding:14px"><div class="b" style="height:18px;border-radius:6px;margin-bottom:9px"></div><div class="b" style="height:14px;width:60%;border-radius:6px;margin-bottom:14px"></div><div class="b" style="height:24px;width:45%;border-radius:6px"></div></div></div>').join('');
+}
+async function load() {
+  if (CONFIG.SUPABASE_ANON_KEY.includes('ใส่_') || CONFIG.SUPABASE_URL.includes('ใส่')) {
+    $('#app').innerHTML = '<div class="setup"><h3>⚙️ ตั้งค่าก่อนใช้งาน</h3><p>เปิดไฟล์ <code>showroom.html</code> แล้วแก้ส่วน <code>CONFIG</code> (ใกล้ท้ายไฟล์):</p><ol><li>วาง <code>SUPABASE_ANON_KEY</code> จาก Supabase → Settings → API</li><li>ใส่ลิงก์ <code>LINE_URL</code> และเบอร์ <code>PHONE</code> ของร้าน</li><li>รันไฟล์ <code>public_showroom.sql</code> ใน Supabase ให้เรียบร้อย</li></ol></div>';
+    return;
+  }
+  skeletons();
+  try {
+    db = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+    const { data, error } = await db.from('public_cars').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    ALL = (data || []).map((c) => ({ ...c, images: Array.isArray(c.images) ? c.images : [] }));
+    apply();
+    $('#tools').hidden = false;
+    $('#heroCount').hidden = false;
+    $('#cntNum').textContent = ALL.length;
+    const carParam = new URLSearchParams(location.search).get('car');
+    if (carParam) openCarById(carParam);
+    startPresence();
+    updateStatsBtn();
+    if (_params.has('stats') || _params.has('owner')) {
+      _params.delete('stats'); _params.delete('owner');
+      const qs = _params.toString();
+      history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
+    }
+    if (_openStatsOnLoad) openStats();
+  } catch (e) {
+    console.error(e);
+    $('#grid').innerHTML = '<div class="state" style="grid-column:1/-1"><div class="em">😕</div><h3>โหลดข้อมูลไม่สำเร็จ</h3><p>ลองรีเฟรชอีกครั้ง หรือทักร้านทาง LINE ได้เลย</p></div>';
+  }
+}
+function buildDrawer() {
+  const bc = {};
+  ALL.forEach((c) => { const b = (c.brand || '').trim(); if (b) bc[b] = (bc[b] || 0) + 1; });
+  const brands = Object.keys(bc).sort((a, b) => bc[b] - bc[a]);
+  let h = '<button class="dr-all' + (brand === 'all' ? ' on' : '') + '" data-b="all">🚗 รถทั้งหมด <span class="dr-meta">' + ALL.length + '</span></button>';
+  brands.forEach((b) => {
+    const mc = {};
+    ALL.filter((c) => (c.brand || '').trim() === b).forEach((c) => { const m = (c.model || '').trim(); if (m) mc[m] = (mc[m] || 0) + 1; });
+    const models = Object.keys(mc).sort((x, y) => mc[y] - mc[x]);
+    const multi = models.length > 1;
+    h += '<div class="dr-group' + (expanded === b ? ' open' : '') + '">';
+    h += '<button class="dr-brand' + (brand === b && model === 'all' ? ' on' : '') + '" data-b="' + esc(b) + '"><span>' + esc(b) + '</span><span class="dr-meta">' + bc[b] + (multi ? ' <i class="chev">\u203a</i>' : '') + '</span></button>';
+    if (multi) {
+      h += '<div class="dr-models">';
+      models.forEach((m) => { h += '<button class="dr-model' + (brand === b && model === m ? ' on' : '') + '" data-b="' + esc(b) + '" data-m="' + esc(m) + '">' + esc(m) + ' <span>' + mc[m] + '</span></button>'; });
+      h += '</div>';
+    }
+    h += '</div>';
+  });
+  const body = $('#drawerBody');
+  body.innerHTML = h;
+  body.querySelector('.dr-all').addEventListener('click', () => { brand = 'all'; model = 'all'; expanded = null; apply(); closeDrawer(); });
+  body.querySelectorAll('.dr-brand').forEach((btn) => btn.addEventListener('click', () => {
+    const b = btn.dataset.b;
+    const hasModels = !!btn.closest('.dr-group').querySelector('.dr-models');
+    if (!hasModels) { brand = b; model = 'all'; expanded = null; apply(); closeDrawer(); return; }
+    if (expanded === b) { expanded = null; }
+    else { expanded = b; brand = b; model = 'all'; apply(); }
+    buildDrawer();
+  }));
+  body.querySelectorAll('.dr-model').forEach((btn) => btn.addEventListener('click', () => {
+    brand = btn.dataset.b; model = btn.dataset.m; apply(); closeDrawer();
+  }));
+}
+function openDrawer() { expanded = (brand !== 'all' ? brand : null); buildDrawer(); $('#drawer').classList.add('show'); $('#drawerOv').classList.add('show'); document.body.style.overflow = 'hidden'; }
+function closeDrawer() { $('#drawer').classList.remove('show'); $('#drawerOv').classList.remove('show'); document.body.style.overflow = ''; }
+function updateActiveFilter() {
+  const el = $('#activeFilter');
+  if (brand === 'all') { el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  el.innerHTML = '<button class="af-chip" id="afClear">' + esc(brand) + (model !== 'all' ? ' \u203a ' + esc(model) : '') + ' <span>\u2715</span></button>';
+  $('#afClear').addEventListener('click', () => { brand = 'all'; model = 'all'; apply(); });
+}
+function cleanDesc(text) {
+  return String(text || '').split(/\r?\n/).filter((line) => {
+    const t = line.trim();
+    if (/ระยะ\s*(การ)?\s*ผ่อน/.test(t)) return false;
+    if (/^[^0-9A-Za-zก-๙]*\d+\s*ปี\s*[\d,]{3,}/.test(t)) return false;
+    return true;
+  }).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+function apply() {
+  let r = ALL.slice();
+  if (brand !== 'all') r = r.filter((c) => (c.brand || '').trim() === brand);
+  if (model !== 'all') r = r.filter((c) => (c.model || '').trim() === model);
+  if (priceRange !== 'all') {
+    const parts = priceRange.split('-');
+    const min = Number(parts[0]) || 0;
+    const max = parts[1] ? Number(parts[1]) : Infinity;
+    r = r.filter((c) => c.price != null && c.price >= min && c.price <= max);
+  }
+  if (query) {
+    const q = query.toLowerCase();
+    r = r.filter((c) => [c.brand, c.model, c.sub_model, c.year, c.price, c.engine, c.gear].filter(Boolean).join(' ').toLowerCase().includes(q));
+  }
+  if (sort === 'plow') r.sort((a, b) => (a.price ?? 9e15) - (b.price ?? 9e15));
+  else if (sort === 'phigh') r.sort((a, b) => (b.price ?? -1) - (a.price ?? -1));
+  else r.sort((a, b) => (b.is_hot ? 1 : 0) - (a.is_hot ? 1 : 0));
+  VIEW = r;
+  page = 1;
+  updateActiveFilter();
+  renderGrid();
+}
+function hasDiscount(c) { return c.original_price != null && c.price != null && Number(c.original_price) > Number(c.price); }
+function badgesHtml(c) {
+  let h = '';
+  if (c.is_hot) h += '<span class="hot">🔥 HOT</span>';
+  if (hasDiscount(c)) h += '<span class="sale">ลดราคา</span>';
+  return h ? '<div class="badges">' + h + '</div>' : '';
+}
+function priceHtml(c) {
+  const cur = baht(c.price) || 'สอบถามราคา';
+  if (hasDiscount(c)) return '<div class="price">' + cur + '<s class="old">' + baht(c.original_price) + '</s><small>ราคาพิเศษ</small></div>';
+  return '<div class="price">' + cur + (c.price != null ? '<small>ราคา</small>' : '') + '</div>';
+}
+function renderGrid() {
+  if (!VIEW.length) {
+    $('#grid').innerHTML = '<div class="state" style="grid-column:1/-1"><div class="em">🔍</div><h3>ไม่พบรถที่ค้นหา</h3><p>ลองเปลี่ยนคำค้นหา หรือเลือกยี่ห้ออื่นดูครับ</p></div>';
+    $('#pager').innerHTML = '';
+    return;
+  }
+  const pages = Math.ceil(VIEW.length / PAGE_SIZE);
+  if (page > pages) page = pages;
+  if (page < 1) page = 1;
+  const start = (page - 1) * PAGE_SIZE;
+  const slice = VIEW.slice(start, start + PAGE_SIZE);
+  $('#grid').innerHTML = slice.map((c, idx) => {
+    const i = start + idx;
+    const cover = c.cover_image_url || (c.images && c.images[0]) || '';
+    const n = c.images ? c.images.length : 0;
+    return '<button class="card" data-i="' + i + '"><div class="card-img">' +
+      (cover ? '<img src="' + esc(cover) + '" alt="' + esc(carName(c)) + '" loading="lazy">' : '<div class="noimg">🚗</div>') +
+      badgesHtml(c) +
+      ((c.tiktok_url && /^https?:\/\//i.test(c.tiktok_url)) ? '<span class="tik-pip" title="มีวิดีโอ TikTok">🎵</span>' : '') +
+      (n > 1 ? '<span class="pics">📷 ' + n + '</span>' : '') +
+      '</div><div class="card-bd"><div class="card-nm">' + esc(carName(c)) + '</div><div class="card-meta">' +
+      (c.year ? '<span>📅 ' + esc(c.year) + '</span>' : '') +
+      (c.mileage ? '<span>🛣️ ' + esc(c.mileage) + '</span>' : '') +
+      '</div><div class="card-ft">' + priceHtml(c) +
+      '<span class="card-go">ดูรายละเอียด →</span></div></div></button>';
+  }).join('');
+  $('#grid').querySelectorAll('.card').forEach((el) => el.addEventListener('click', () => openDetail(Number(el.dataset.i))));
+  renderPager(pages);
+}
+function renderPager(pages) {
+  const p = $('#pager');
+  if (pages <= 1) { p.innerHTML = ''; return; }
+  let h = '<button data-p="' + (page - 1) + '"' + (page === 1 ? ' disabled' : '') + '>‹</button>';
+  for (let i = 1; i <= pages; i++) h += '<button class="' + (i === page ? 'on' : '') + '" data-p="' + i + '">' + i + '</button>';
+  h += '<button data-p="' + (page + 1) + '"' + (page === pages ? ' disabled' : '') + '>›</button>';
+  p.innerHTML = h;
+  p.querySelectorAll('button[data-p]').forEach((b) => b.addEventListener('click', () => {
+    if (b.disabled) return;
+    const np = Number(b.dataset.p);
+    if (np < 1 || np > pages || np === page) return;
+    page = np;
+    renderGrid();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }));
+}
+function openDetail(i) {
+  cur = VIEW[i]; curIdx = 0;
+  if (!cur) return;
+  renderSheet();
+  $('#ov').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  countView(cur);
+}
+function closeDetail() {
+  $('#ov').classList.remove('show');
+  document.body.style.overflow = '';
+  if (location.search.indexOf('car=') !== -1) history.replaceState(null, '', location.pathname + _branchQS);
+}
+// ── คนดูสด (Supabase Realtime Presence) — นับเฉพาะลูกค้า (ไม่นับเจ้าของ) ──
+function startPresence() {
+  if (!db || presenceChannel) return;
+  const key = (self.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'u' + Math.random().toString(36).slice(2);
+  presenceChannel = db.channel('showroom-live', { config: { presence: { key } } });
+  presenceChannel.on('presence', { event: 'sync' }, () => {
+    const st = presenceChannel.presenceState();
+    let n = 0;
+    Object.values(st).forEach((arr) => arr.forEach((p) => { if (!p.owner) n++; }));
+    liveCount = n; updateLiveUI();
+  });
+  presenceChannel.subscribe(async (status) => {
+    if (status === 'SUBSCRIBED') { try { await presenceChannel.track({ owner: isOwner(), at: Date.now() }); } catch (e) {} }
+  });
+}
+function retrackPresence() { if (presenceChannel) { try { presenceChannel.track({ owner: isOwner(), at: Date.now() }); } catch (e) {} } }
+function updateLiveUI() { const el = $('#statLive'); if (el) el.textContent = liveCount; }
+function updateStatsBtn() { const b = $('#statsBtn'); if (b) b.style.display = isOwner() ? 'grid' : 'none'; }
+// ── หน้าสถิติ (เฉพาะเจ้าของ) ──
+function openStats() {
+  $('#statsSheet').innerHTML =
+    '<div class="stats-hd"><h2>📊 สถิติร้าน <small>(เฉพาะเจ้าของ)</small></h2><button class="sh-x" id="statsX" aria-label="ปิด">✕</button></div>' +
+    '<div class="stats-live">🟢 ลูกค้ากำลังดูตอนนี้ <b id="statLive">' + liveCount + '</b> คน</div>' +
+    '<div class="stats-total">📈 ยอดดูรวมทั้งเว็บ <b id="statTotal">…</b> ครั้ง</div>' +
+    '<h3>👁 รถยอดนิยม</h3><div id="statList">กำลังโหลด…</div>' +
+    '<div class="stats-foot"><button id="ownerOff" class="stats-btn-off">ออกจากโหมดเจ้าของ</button>' +
+    '<span class="stats-note">เครื่องนี้ถูกตั้งเป็น “เจ้าของ” — การกดดูของคุณจะไม่ถูกนับในสถิติ</span></div>';
+  $('#statsX').addEventListener('click', closeStats);
+  $('#ownerOff').addEventListener('click', () => { setOwner(false); retrackPresence(); updateStatsBtn(); showToast('ออกจากโหมดเจ้าของแล้ว'); closeStats(); });
+  $('#statsOv').classList.add('show'); document.body.style.overflow = 'hidden';
+  loadStats();
+}
+function closeStats() { $('#statsOv').classList.remove('show'); document.body.style.overflow = ''; }
+async function loadStats() {
+  try {
+    const { data, error } = await db.from('car_view_ranking').select('*').limit(100);
+    if (error) throw error;
+    const rows = data || [];
+    const total = rows.reduce((s, r) => s + (Number(r.views) || 0), 0);
+    const tEl = $('#statTotal'); if (tEl) tEl.textContent = total.toLocaleString('th-TH');
+    const listEl = $('#statList'); if (!listEl) return;
+    if (!rows.length) { listEl.innerHTML = '<div class="stats-empty">ยังไม่มีข้อมูลการดู — รอลูกค้าเข้ามาชมก่อนนะครับ</div>'; return; }
+    listEl.innerHTML = rows.slice(0, 20).map((r, i) =>
+      '<button class="stat-row" data-car="' + esc(r.car_id) + '">' +
+      '<span class="stat-rank">' + (i + 1) + '</span>' +
+      '<img src="' + esc(r.cover_image_url || '') + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
+      '<span class="stat-name">' + esc([r.brand, r.model, r.sub_model].filter(Boolean).join(' ')) + (r.year ? ' ' + esc(r.year) : '') + '</span>' +
+      '<span class="stat-views">👁 ' + Number(r.views).toLocaleString('th-TH') + '</span></button>'
+    ).join('');
+    listEl.querySelectorAll('.stat-row').forEach((b) => b.addEventListener('click', () => { closeStats(); openCarById(b.dataset.car); }));
+  } catch (e) {
+    const listEl = $('#statList'); if (listEl) listEl.innerHTML = '<div class="stats-empty">โหลดสถิติไม่สำเร็จ — รัน showroom_stats.sql ใน Supabase แล้วหรือยังครับ?</div>';
+  }
+}
+function gallery(d) {
+  if (curIdx < 0) curIdx = 0;
+  if (curIdx > d - 1) curIdx = d - 1;
+  if ($('#shImg')) $('#shImg').src = cur.images[curIdx] || cur.cover_image_url || '';
+  if ($('#shCount')) $('#shCount').textContent = (curIdx + 1) + '/' + d;
+  document.querySelectorAll('.sh-thumbs img').forEach((t, k) => t.classList.toggle('on', k === curIdx));
+}
+function renderSheet() {
+  const c = cur;
+  const imgs = c.images && c.images.length ? c.images : (c.cover_image_url ? [c.cover_image_url] : []);
+  const specs = [['ปีรถ', c.year], ['เลขไมล์', c.mileage], ['เครื่องยนต์', c.engine], ['เกียร์', c.gear]].filter((p) => p[1] != null && p[1] !== '');
+  $('#sheet').innerHTML =
+    '<div class="sh-hero">' +
+    (imgs.length ? '<img id="shImg" src="' + esc(imgs[0]) + '" alt="' + esc(carName(c)) + '">' : '<div class="noimg" style="height:100%;display:grid;place-items:center;font-size:3rem;color:#fff">🚗</div>') +
+    '<button class="sh-x" id="shX" aria-label="ปิด">✕</button>' +
+    '<button class="sh-share" id="shShare" aria-label="แชร์รถคันนี้">🔗</button>' +
+    (imgs.length > 1 ? '<button class="sh-nav prev" id="shPrev" aria-label="รูปก่อนหน้า">‹</button><button class="sh-nav next" id="shNext" aria-label="รูปถัดไป">›</button><span class="sh-count" id="shCount">1/' + imgs.length + '</span>' : '') +
+    '</div>' +
+    (imgs.length > 1 ? '<div class="sh-thumbs">' + imgs.map((u, k) => '<img src="' + esc(u) + '" data-k="' + k + '" class="' + (k === 0 ? 'on' : '') + '" alt="">').join('') + '</div>' : '') +
+    '<div class="sh-bd">' + (c.is_hot ? '<span class="sh-hot">🔥 HOT</span>' : '') + '<div class="sh-nm">' + esc(carName(c)) + '</div><div class="sh-price">' + (baht(c.price) || 'สอบถามราคา') + (hasDiscount(c) ? '<s class="old">' + baht(c.original_price) + '</s>' : '') + '</div>' +
+    (specs.length ? '<div class="specs">' + specs.map((p) => '<div class="spec"><span>' + p[0] + '</span><b>' + esc(p[1]) + '</b></div>').join('') + '</div>' : '') +
+    (cleanDesc(c.description) ? '<div class="desc">' + esc(cleanDesc(c.description)) + '</div>' : '') +
+    ((c.tiktok_url && /^https?:\/\//i.test(c.tiktok_url)) ? '<a class="cta cta-tiktok" href="' + esc(c.tiktok_url) + '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 3c.32 2.1 1.62 3.55 3.5 3.8v2.35c-1.16.05-2.32-.2-3.36-.78l-.02 5.6c0 2.96-2.2 5.23-5.06 5.23-2.85 0-5.06-2.27-5.06-5.18 0-2.93 2.27-5.2 5.13-5.2.27 0 .54.02.8.06v2.53a2.6 2.6 0 0 0-.86-.15c-1.46 0-2.6 1.18-2.6 2.7 0 1.5 1.14 2.66 2.6 2.66 1.46 0 2.62-1.13 2.62-2.6V3h2.37z"/></svg>🎵 ดูวิดีโอรถคันนี้ใน TikTok</a>' : '') +
+    '<div class="cta-row"><button class="cta cta-line" data-line><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.64 2 10.1c0 4 3.55 7.34 8.35 7.97.32.07.77.21.88.49.1.25.07.64.03.9l-.14.86c-.04.25-.2 1 .87.54s5.79-3.41 7.9-5.84C21.3 13.5 22 11.88 22 10.1 22 5.64 17.52 2 12 2z"/></svg>สอบถาม LINE</button>' +
+    '<button class="cta cta-call" data-call><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.5 21 3 13.5 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z"/></svg>โทรเลย</button></div></div>';
+  $('#shX').addEventListener('click', closeDetail);
+  $('#shShare').addEventListener('click', () => shareCar(cur));
+  const D = imgs.length;
+  if (D > 1) {
+    $('#shPrev').addEventListener('click', () => { curIdx = (curIdx - 1 + D) % D; gallery(D); });
+    $('#shNext').addEventListener('click', () => { curIdx = (curIdx + 1) % D; gallery(D); });
+    $('#sheet').querySelectorAll('.sh-thumbs img').forEach((t) => t.addEventListener('click', () => { curIdx = Number(t.dataset.k); gallery(D); }));
+  }
+  $('#sheet').querySelectorAll('[data-line]').forEach((b) => b.addEventListener('click', () => window.open(lineCarUrl(cur), '_blank')));
+  $('#sheet').querySelectorAll('[data-call]').forEach((b) => b.addEventListener('click', () => { location.href = 'tel:' + CONFIG.PHONE.replace(/[^0-9+]/g, ''); }));
+}
+$('#ov').addEventListener('click', (e) => { if (e.target.id === 'ov') closeDetail(); });
+$('#statsOv').addEventListener('click', (e) => { if (e.target.id === 'statsOv') closeStats(); });
+$('#statsBtn').addEventListener('click', openStats);
+document.addEventListener('keydown', (e) => {
+  if (!$('#ov').classList.contains('show')) return;
+  if (e.key === 'Escape') closeDetail();
+  if (cur && cur.images && cur.images.length > 1) {
+    const D = cur.images.length;
+    if (e.key === 'ArrowLeft') { curIdx = (curIdx - 1 + D) % D; gallery(D); }
+    if (e.key === 'ArrowRight') { curIdx = (curIdx + 1) % D; gallery(D); }
+  }
+});
+$('#menuBtn').addEventListener('click', openDrawer);
+$('#drawerX').addEventListener('click', closeDrawer);
+$('#drawerOv').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#drawer').classList.contains('show')) closeDrawer(); });
+let qt;
+$('#q').addEventListener('input', (e) => { clearTimeout(qt); const v = e.target.value; qt = setTimeout(() => { query = v.trim(); apply(); }, 200); });
+$('#sort').addEventListener('change', (e) => { sort = e.target.value; apply(); });
+$('#priceRange').addEventListener('change', (e) => { priceRange = e.target.value; apply(); });
+// กันซูมบนมือถือ (iOS เพิกเฉย user-scalable=no จึงต้องกันด้วย JS)
+['gesturestart', 'gesturechange', 'gestureend'].forEach((ev) => document.addEventListener(ev, (e) => e.preventDefault()));
+let _lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - _lastTouchEnd <= 350) e.preventDefault(); _lastTouchEnd = n; }, false);
+load();
+</script>
+</body>
+</html>
