@@ -584,6 +584,51 @@
     }
 
     [hidden] { display: none !important; }
+
+    /* ── CAR FORM REDESIGN ──────────────────────────────────── */
+    .car-modal-panel { background: #FDF8F5; }
+    .car-modal-panel .modal-header { background: #FDF8F5; border-bottom-color: #E8DFDA; }
+    .car-modal-panel .modal-body   { background: #FDF8F5; }
+    .car-modal-panel .modal-footer { background: #FDF8F5; border-top-color: #E8DFDA; }
+    .car-modal-panel .form-input   { background: #EFE9E2; border-color: #DDD5CB; color: #1C1917; }
+    .car-modal-panel .form-input:focus { background: #fff; border-color: #E8532B; }
+    .car-modal-panel .form-input::placeholder { color: #A89B8F; }
+    .car-modal-panel select.form-input option { background: #fff; color: #1C1917; }
+    .modal-eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 2px; }
+    .car-modal-panel h2 { font-size: 20px; }
+
+    /* Paste section */
+    .paste-box { background: #FEE4DF; border: 1.5px solid #F5C0B4; border-radius: 12px; padding: 14px; margin-bottom: 4px; }
+    .paste-box-label { font-size: 12px; font-weight: 700; color: #B34038; margin-bottom: 8px; }
+    .paste-area { width: 100%; min-height: 110px; padding: 10px 12px; border: 1.5px solid #F0B4A8; border-radius: 8px; background: #fff; font-size: 13px; font-family: inherit; color: #1C1917; resize: vertical; outline: none; margin-bottom: 10px; display: block; line-height: 1.5; }
+    .paste-area:focus { border-color: #E8532B; }
+    .paste-area::placeholder { color: #B8A8A0; }
+    .btn-parse-go { width: 100%; padding: 13px; background: linear-gradient(120deg, #E8472B, #F47850); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; letter-spacing: .2px; transition: opacity .15s, transform .1s; }
+    .btn-parse-go:active { transform: scale(.98); opacity: .9; }
+
+    /* Dividers */
+    .form-divider { position: relative; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: #A89B90; margin: 16px 0 14px; }
+    .form-divider::before, .form-divider::after { content:''; position: absolute; top: 50%; height: 1px; background: #DDD5CB; width: calc(50% - 72px); }
+    .form-divider::before { left: 0; }
+    .form-divider::after  { right: 0; }
+    .form-divider-minor { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: #A89B90; margin: 14px 0 10px; padding-bottom: 7px; border-bottom: 1px solid #DDD5CB; }
+
+    /* Soft label (long description label) */
+    .form-label-soft { text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--muted); font-size: 12px; }
+
+    /* HOT checkbox */
+    .hot-row { display: flex; align-items: center; gap: 10px; background: #fff; border: 1.5px solid #DDD5CB; border-radius: 10px; padding: 12px 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .hot-row input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; accent-color: #E8472B; cursor: pointer; }
+    .hot-row-label { font-weight: 700; font-size: 14px; color: #1C1917; }
+    .hot-row-label small { font-weight: 400; color: var(--muted); font-size: 11px; display: block; margin-top: 1px; }
+
+    /* Form note */
+    .form-note { font-size: 12px; color: var(--muted); background: #EFE9E2; border-radius: 8px; padding: 10px 13px; margin-top: 10px; line-height: 1.5; }
+
+    /* Coral button */
+    .btn-coral { background: linear-gradient(120deg, #E8472B, #F47850); color: #fff; }
+    .btn-coral:hover { opacity: .92; }
+
   </style>
 </head>
 <body>
@@ -639,106 +684,153 @@
 
 <!-- ════════════════════ CAR FORM MODAL ════════════════════ -->
 <div class="modal-overlay" id="car-modal" hidden>
-  <div class="modal-panel">
+  <div class="modal-panel car-modal-panel">
     <div class="modal-header">
-      <h2 id="car-modal-title">เพิ่มรถใหม่</h2>
+      <div>
+        <div class="modal-eyebrow" id="car-modal-eyebrow">เพิ่มรถใหม่</div>
+        <h2>กรอกข้อมูลรถ</h2>
+      </div>
       <button class="modal-close-btn" data-modal="car-modal">×</button>
     </div>
 
     <div class="modal-body">
       <input type="hidden" id="f-id">
 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="f-brand">ยี่ห้อ *</label>
-          <input class="form-input" type="text" id="f-brand" placeholder="Toyota">
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="f-model">รุ่น *</label>
-          <input class="form-input" type="text" id="f-model" placeholder="Camry">
-        </div>
+      <!-- ── PASTE SHORTCUT ──────────────────────────────── -->
+      <div class="paste-box">
+        <div class="paste-box-label">✨ ทางลัด: วางข้อความขายรถทั้งก้อน แล้วกดแยกข้อมูล</div>
+        <textarea id="f-paste" class="paste-area" placeholder="วางข้อความขายรถที่นี่... (ระบบจะแยก ยี่ห้อ/รุ่น/ปี/ไมล์/เครื่อง/เกียร์/ราคา/ค่างวด ให้อัตโนมัติ)"></textarea>
+        <button class="btn-parse-go" id="btn-parse-inline">✨ แยกข้อมูลอัตโนมัติ</button>
       </div>
 
+      <div class="form-divider">ตรวจ/แก้ข้อมูลก่อนบันทึก</div>
+
+      <!-- ── BRAND / MODEL ───────────────────────────────── -->
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="f-sub-model">รุ่นย่อย</label>
-          <input class="form-input" type="text" id="f-sub-model" placeholder="2.5 G">
+          <label class="form-label" for="f-brand">ยี่ห้อ</label>
+          <input class="form-input" type="text" id="f-brand" placeholder="— กรอกยี่ห้อ —">
         </div>
         <div class="form-group">
-          <label class="form-label" for="f-year">ปี (พ.ศ.) *</label>
-          <input class="form-input" type="number" id="f-year" placeholder="2567" min="2530" max="2580">
+          <label class="form-label" for="f-model">รุ่น</label>
+          <input class="form-input" type="text" id="f-model" placeholder="— กรอกรุ่น —">
         </div>
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="f-plate">ทะเบียน</label>
-        <input class="form-input" type="text" id="f-plate" placeholder="กข 1234 กทม.">
+        <label class="form-label" for="f-sub-model">รุ่นย่อย</label>
+        <input class="form-input" type="text" id="f-sub-model" placeholder="— กรอกรุ่นย่อย —">
       </div>
 
-      <div class="section-header">ราคา</div>
-
+      <!-- ── YEAR / PLATE ────────────────────────────────── -->
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="f-price">ราคาขาย (บาท) *</label>
-          <input class="form-input" type="number" id="f-price" placeholder="350000" inputmode="numeric">
-          <p class="form-hint" id="f-price-fmt"></p>
+          <label class="form-label" for="f-year">ปีรถ</label>
+          <input class="form-input" type="number" id="f-year" placeholder="— กรอกปีรถ —" min="1990" max="2030">
         </div>
         <div class="form-group">
-          <label class="form-label" for="f-orig-price">ราคาก่อนลด</label>
-          <input class="form-input" type="number" id="f-orig-price" placeholder="390000" inputmode="numeric">
-          <p class="form-hint" id="f-orig-price-fmt"></p>
+          <label class="form-label" for="f-plate">ทะเบียน (ตอนจอง/เดิม) ⭐</label>
+          <input class="form-input" type="text" id="f-plate" placeholder="— เลขทะเบียน 4 ตัวหลัง —">
         </div>
       </div>
 
-      <div class="section-header">รายละเอียดรถ</div>
+      <div class="form-group">
+        <label class="form-label form-label-soft" for="f-plate-new">ทะเบียนใหม่ (ตอนปล่อย — ถ้าเปลี่ยนป้าย ใส่ได้หลายป้าย คั่นด้วยจุลภาค)</label>
+        <input class="form-input" type="text" id="f-plate-new" placeholder="— เว้นว่างได้ ถ้าไม่เปลี่ยนป้าย เช่น 1234, ขก 5678 —">
+      </div>
 
+      <!-- ── MILEAGE / ENGINE ────────────────────────────── -->
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="f-mileage">เลขไมล์ (กม.)</label>
-          <input class="form-input" type="number" id="f-mileage" placeholder="45000" inputmode="numeric">
+          <label class="form-label" for="f-mileage">เลขไมล์</label>
+          <input class="form-input" type="number" id="f-mileage" placeholder="— กรอกเลขไมล์ —" inputmode="numeric">
         </div>
         <div class="form-group">
           <label class="form-label" for="f-engine">เครื่องยนต์</label>
-          <input class="form-input" type="text" id="f-engine" placeholder="1.5 DOHC">
+          <input class="form-input" type="text" id="f-engine" placeholder="— กรอกเครื่องยนต์ —">
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="form-label" for="f-gear">เกียร์</label>
-        <select class="form-input" id="f-gear">
-          <option value="">-- เลือกประเภทเกียร์ --</option>
-          <option value="ออโต้">ออโต้</option>
-          <option value="ธรรมดา">ธรรมดา</option>
-          <option value="CVT">CVT</option>
-          <option value="DCT">DCT</option>
-          <option value="อื่นๆ">อื่นๆ</option>
-        </select>
+      <!-- ── GEAR / PRICE ───────────────────────────────── -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="f-gear">เกียร์</label>
+          <select class="form-input" id="f-gear">
+            <option value="">— กรอกเกียร์ —</option>
+            <option value="ออโต้">ออโต้</option>
+            <option value="ธรรมดา">ธรรมดา</option>
+            <option value="CVT">CVT</option>
+            <option value="DCT">DCT</option>
+            <option value="อื่นๆ">อื่นๆ</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-price">ราคา (บาท)</label>
+          <input class="form-input" type="number" id="f-price" placeholder="— กรอกราคา —" inputmode="numeric">
+          <p class="form-hint" id="f-price-fmt"></p>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label class="form-label" for="f-desc">รายละเอียดเพิ่มเติม</label>
-        <textarea class="form-input" id="f-desc" placeholder="สี เลขตัวถัง ประวัติซ่อม ของแต่ง ฯลฯ"></textarea>
+      <!-- ── ORIGINAL PRICE ─────────────────────────────── -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="f-orig-price">ราคาเดิม ก่อนลด</label>
+          <input class="form-input" type="number" id="f-orig-price" placeholder="— เว้นว่างถ้าไม่ลดราคา —" inputmode="numeric">
+          <p class="form-hint" id="f-orig-price-fmt"></p>
+        </div>
+        <div class="form-group" style="visibility:hidden;pointer-events:none"></div>
       </div>
 
+      <!-- ── HOT ────────────────────────────────────────── -->
+      <div class="form-group">
+        <label class="hot-row">
+          <input type="checkbox" id="f-hot">
+          <span class="hot-row-label">🔥 ติดป้าย HOT / รถแนะนำ
+            <small>แสดงขึ้นบนสุดในเว็บลูกค้า</small>
+          </span>
+        </label>
+      </div>
+
+      <!-- ── INSTALLMENTS ───────────────────────────────── -->
+      <div class="form-divider-minor">ค่างวดประมาณ (บาท/เดือน)</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="f-inst-4y">ค่างวด 4 ปี</label>
+          <input class="form-input" type="number" id="f-inst-4y" placeholder="—" inputmode="numeric">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-inst-5y">ค่างวด 5 ปี</label>
+          <input class="form-input" type="number" id="f-inst-5y" placeholder="—" inputmode="numeric">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="f-inst-6y">ค่างวด 6 ปี</label>
+          <input class="form-input" type="number" id="f-inst-6y" placeholder="—" inputmode="numeric">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-inst-7y">ค่างวด 7 ปี</label>
+          <input class="form-input" type="number" id="f-inst-7y" placeholder="—" inputmode="numeric">
+        </div>
+      </div>
+
+      <!-- ── TIKTOK / DESCRIPTION ───────────────────────── -->
       <div class="form-group">
         <label class="form-label" for="f-tiktok">ลิงก์ TikTok (ถ้ามี)</label>
         <input class="form-input" type="url" id="f-tiktok" placeholder="https://www.tiktok.com/@...">
       </div>
 
       <div class="form-group">
-        <div class="toggle-row">
-          <span class="label">🔥 HOT — ไฮไลต์รถคันนี้ในโชว์รูม</span>
-          <label class="toggle">
-            <input type="checkbox" id="f-hot">
-            <span class="toggle-track"></span>
-          </label>
-        </div>
+        <label class="form-label" for="f-desc">ข้อความขายรถ (คัดลอกส่งลูกค้า)</label>
+        <textarea class="form-input" id="f-desc" style="min-height:150px;" placeholder="— วางข้อความขายรถ แล้วกดปุ่มแยกข้อมูลด้านบน —"></textarea>
       </div>
+
+      <div class="form-note">🖼️ รูปภาพ: กด "บันทึก & เพิ่มรูป" ด้านล่าง แล้วจะเข้าหน้าเพิ่มรูปให้ทันที</div>
     </div>
 
     <div class="modal-footer">
       <button class="btn btn-ghost" data-modal="car-modal">ยกเลิก</button>
-      <button class="btn btn-navy" id="btn-save-car">💾 บันทึก</button>
+      <button class="btn btn-coral" id="btn-save-car">บันทึก &amp; เพิ่มรูป 🖼️</button>
     </div>
   </div>
 </div>
@@ -1032,30 +1124,66 @@ document.querySelectorAll('.tab').forEach(tab => {
 $('btn-add-car').addEventListener('click', () => openCarModal());
 
 function openCarModal(car = null) {
-  $('car-modal-title').textContent = car ? 'แก้ไขข้อมูลรถ' : 'เพิ่มรถใหม่';
-  $('f-id').value            = car?.id            || '';
-  $('f-brand').value         = car?.brand         || '';
-  $('f-model').value         = car?.model         || '';
-  $('f-sub-model').value     = car?.sub_model     || '';
-  $('f-year').value          = car?.year          || (new Date().getFullYear() + 543);
-  $('f-plate').value         = car?.license_plate || '';
-  $('f-price').value         = car?.price         || '';
-  $('f-orig-price').value    = car?.original_price || '';
-  $('f-mileage').value       = car?.mileage        || '';
-  $('f-engine').value        = car?.engine         || '';
-  $('f-gear').value          = car?.gear           || '';
-  $('f-desc').value          = car?.description    || '';
-  $('f-tiktok').value        = car?.tiktok_url     || '';
-  $('f-hot').checked         = car?.is_hot         || false;
+  $('car-modal-eyebrow').textContent = car ? 'แก้ไขรถ' : 'เพิ่มรถใหม่';
+  $('f-id').value            = car?.id                   || '';
+  $('f-paste').value         = '';
+  $('f-brand').value         = car?.brand                || '';
+  $('f-model').value         = car?.model                || '';
+  $('f-sub-model').value     = car?.sub_model            || '';
+  $('f-year').value          = car?.year                 || (new Date().getFullYear());
+  $('f-plate').value         = car?.license_plate        || '';
+  $('f-plate-new').value     = car?.license_plate_new    || '';
+  $('f-price').value         = car?.price                || '';
+  $('f-orig-price').value    = car?.original_price       || '';
+  $('f-mileage').value       = car?.mileage              || '';
+  $('f-engine').value        = car?.engine               || '';
+  $('f-gear').value          = car?.gear                 || '';
+  $('f-desc').value          = car?.description          || '';
+  $('f-tiktok').value        = car?.tiktok_url           || '';
+  $('f-hot').checked         = car?.is_hot               || false;
+  $('f-inst-4y').value       = car?.installment_4y       || '';
+  $('f-inst-5y').value       = car?.installment_5y       || '';
+  $('f-inst-6y').value       = car?.installment_6y       || '';
+  $('f-inst-7y').value       = car?.installment_7y       || '';
   updatePriceFmt();
   openModal('car-modal');
 }
+
+// Inline paste parser
+$('btn-parse-inline').addEventListener('click', () => {
+  const raw = $('f-paste').value.trim();
+  if (!raw) { toast('วางข้อความก่อนครับ', 'err'); return; }
+
+  const parsed = parseCarText(raw);
+  if (!parsed.brand && !parsed.price) {
+    toast('แยกข้อมูลไม่สำเร็จ — ลองจัดรูปข้อความใหม่ครับ', 'err');
+    return;
+  }
+
+  if (parsed.brand)         $('f-brand').value     = parsed.brand;
+  if (parsed.model)         $('f-model').value     = parsed.model;
+  if (parsed.sub_model)     $('f-sub-model').value = parsed.sub_model;
+  if (parsed.year)          $('f-year').value      = parsed.year;
+  if (parsed.mileage)       $('f-mileage').value   = parsed.mileage;
+  if (parsed.engine)        $('f-engine').value    = parsed.engine;
+  if (parsed.gear)          $('f-gear').value      = parsed.gear;
+  if (parsed.price)         $('f-price').value     = parsed.price;
+  if (parsed.installment_4y) $('f-inst-4y').value  = parsed.installment_4y;
+  if (parsed.installment_5y) $('f-inst-5y').value  = parsed.installment_5y;
+  if (parsed.installment_6y) $('f-inst-6y').value  = parsed.installment_6y;
+  if (parsed.installment_7y) $('f-inst-7y').value  = parsed.installment_7y;
+  if (parsed.description)   $('f-desc').value      = parsed.description;
+  updatePriceFmt();
+
+  const count = Object.values(parsed).filter(v => v).length;
+  toast(`แยกข้อมูลได้ ${count} ฟิลด์ ✨`, 'ok');
+});
 
 // Price formatter hints
 function updatePriceFmt() {
   const p = $('f-price').value;
   const o = $('f-orig-price').value;
-  $('f-price-fmt').textContent    = p ? Number(p).toLocaleString('th-TH') + ' บาท' : '';
+  $('f-price-fmt').textContent      = p ? Number(p).toLocaleString('th-TH') + ' บาท' : '';
   $('f-orig-price-fmt').textContent = o ? Number(o).toLocaleString('th-TH') + ' บาท' : '';
 }
 $('f-price').addEventListener('input',      updatePriceFmt);
@@ -1080,17 +1208,22 @@ async function doSaveCar() {
   const payload = {
     brand,
     model,
-    sub_model:      $('f-sub-model').value.trim()  || null,
+    sub_model:          $('f-sub-model').value.trim()  || null,
     year,
-    license_plate:  $('f-plate').value.trim()       || null,
+    license_plate:      $('f-plate').value.trim()      || null,
+    license_plate_new:  $('f-plate-new').value.trim()  || null,
     price,
-    original_price: parseInt($('f-orig-price').value) || null,
-    mileage:        parseInt($('f-mileage').value)    || null,
-    engine:         $('f-engine').value.trim()         || null,
-    gear:           $('f-gear').value                  || null,
-    description:    $('f-desc').value.trim()           || null,
-    tiktok_url:     $('f-tiktok').value.trim()         || null,
-    is_hot:         $('f-hot').checked,
+    original_price:     parseInt($('f-orig-price').value) || null,
+    mileage:            parseInt($('f-mileage').value)    || null,
+    engine:             $('f-engine').value.trim()        || null,
+    gear:               $('f-gear').value                 || null,
+    description:        $('f-desc').value.trim()          || null,
+    tiktok_url:         $('f-tiktok').value.trim()        || null,
+    is_hot:             $('f-hot').checked,
+    installment_4y:     parseInt($('f-inst-4y').value)   || null,
+    installment_5y:     parseInt($('f-inst-5y').value)   || null,
+    installment_6y:     parseInt($('f-inst-6y').value)   || null,
+    installment_7y:     parseInt($('f-inst-7y').value)   || null,
   };
 
   const btn = $('btn-save-car');
@@ -1109,7 +1242,7 @@ async function doSaveCar() {
   }
 
   btn.disabled = false;
-  btn.textContent = '💾 บันทึก';
+  btn.textContent = 'บันทึก & เพิ่มรูป 🖼️';
 
   if (error) {
     toast('บันทึกล้มเหลว: ' + error.message, 'err');
@@ -1120,7 +1253,6 @@ async function doSaveCar() {
   closeModal('car-modal');
   await loadCars();
 
-  // Auto-open image manager for new cars
   if (!isEdit && newCarId) {
     setTimeout(() => openImageModal(newCarId), 280);
   }
@@ -1556,9 +1688,19 @@ function parseCarText(raw) {
       continue; // ไม่ใส่ราคาในรายละเอียด
     }
 
-    // ── Skip installment / promo lines ─────────────────────
+    // ── Installments: "4 ปี 20,070" or "ค่างวด 4 ปี 20,070" ────
+    const instM = c.match(/(\d)\s*ปี\s*([\d,]+)/);
+    if (instM) {
+      const yrs = parseInt(instM[1]);
+      const amt = parseInt(instM[2].replace(/,/g, ''));
+      if ([4,5,6,7].includes(yrs) && amt > 1000) {
+        result[`installment_${yrs}y`] = amt;
+      }
+      continue;
+    }
+
+    // ── Skip promo lines ─────────────────────────────────────
     if (/ฟรีดาวน์|ฟรีจัด|ฟรีโอน|ระยะการผ่อน/.test(c)) continue;
-    if (/^\d+\s*ปี\s*[\d,]+$/.test(c)) continue; // "4 ปี 20,070"
 
     descLines.push(c);
   }
