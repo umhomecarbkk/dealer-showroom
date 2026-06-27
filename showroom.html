@@ -205,7 +205,31 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .stats-foot{padding:14px 22px 22px;display:flex;flex-direction:column;gap:7px;align-items:flex-start}
 .stats-btn-off{background:#fde8e6;color:#b42318;border:none;font-family:'Kanit',sans-serif;font-weight:600;padding:10px 16px;border-radius:11px;cursor:pointer}
 .stats-note{font-size:.78rem;color:#8A8276;line-height:1.4}
-.stats-empty{padding:18px 22px;color:#8A8276}
+/* ── SHEET REDESIGN (dark premium) ─────────────────────── */
+.sh-grad{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 45%,rgba(0,0,0,.75) 100%);pointer-events:none}
+.sh-hero-foot{position:absolute;bottom:12px;left:14px;right:14px;display:flex;align-items:center;justify-content:space-between}
+.sh-hero .sh-x,.sh-hero .sh-share{background:rgba(0,0,0,.6)!important;backdrop-filter:blur(8px)!important;border:1px solid rgba(255,255,255,.12)!important;color:#fff!important}
+.sh-count{background:rgba(0,0,0,.55)!important;color:rgba(255,255,255,.85)!important;backdrop-filter:blur(4px);padding:3px 11px!important;border-radius:20px!important;font-size:.76rem!important}
+/* Thumbnail strip */
+.sheet-thumbs{display:flex;gap:6px;overflow-x:auto;padding:9px 14px;background:#0a0a0a;scrollbar-width:none;border-bottom:1px solid #1e1e1e}
+.sheet-thumbs::-webkit-scrollbar{display:none}
+.sheet-thumbs img{width:60px;height:44px;object-fit:cover;border-radius:7px;flex-shrink:0;border:2px solid transparent;opacity:.5;transition:all .15s;cursor:pointer}
+.sheet-thumbs img.on{border-color:var(--brand);opacity:1}
+/* Body */
+.sh-bd{padding:16px 18px 28px;background:#111}
+.sh-nm{font-family:'Kanit',sans-serif;font-weight:700;font-size:1.35rem;line-height:1.25;color:#f0ede8;margin-bottom:5px}
+.sh-price{font-family:'Kanit',sans-serif;font-weight:800;font-size:2rem;color:var(--brand);line-height:1;margin-bottom:14px}
+.sh-price .old{font-family:'Sarabun';font-size:1rem;color:#706d66;text-decoration:line-through;font-weight:400;margin-left:9px}
+/* Spec pills */
+.spec-pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.spec-pill{display:inline-flex;flex-direction:column;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:11px;padding:8px 13px;min-width:76px}
+.spec-pill em{font-style:normal;font-size:.67rem;color:#706d66;margin-bottom:2px;white-space:nowrap}
+.spec-pill b{font-size:.88rem;color:#f0ede8;font-weight:600}
+/* Description */
+.sh-bd .desc{background:#1a1a1a!important;border-color:#252525!important;color:#a8a49f!important}
+/* HOT badge in sheet */
+.sh-hot{font-size:.72rem!important;padding:3px 10px!important}
+
 /* ── DARK RED/BLACK PREMIUM OVERRIDE ────────────────────────── */
 body{background:var(--bg);color:var(--ink)}
 .hd{background:rgba(10,10,10,.97)!important;border-bottom:1px solid #2a2a2a!important;position:relative}
@@ -409,7 +433,13 @@ async function load() {
     db = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
     const { data, error } = await db.from('public_cars').select('*').order('created_at', { ascending: false });
     if (error) throw error;
-    ALL = (data || []).map((c) => ({ ...c, images: Array.isArray(c.images) ? c.images : [] }));
+    ALL = (data || []).map((c) => ({
+      ...c,
+      // normalize images → always array of URL strings
+      images: Array.isArray(c.images)
+        ? c.images.map(i => typeof i === 'object' ? (i.image_url || '') : i).filter(Boolean)
+        : []
+    }));
     apply();
     $('#tools').hidden = false;
     $('#heroCount').hidden = false;
@@ -631,33 +661,55 @@ function gallery(d) {
   if (curIdx > d - 1) curIdx = d - 1;
   if ($('#shImg')) $('#shImg').src = cur.images[curIdx] || cur.cover_image_url || '';
   if ($('#shCount')) $('#shCount').textContent = (curIdx + 1) + '/' + d;
-  document.querySelectorAll('.sh-thumbs img').forEach((t, k) => t.classList.toggle('on', k === curIdx));
+  document.querySelectorAll('.sheet-thumbs img').forEach((t, k) => t.classList.toggle('on', k === curIdx));
 }
 function renderSheet() {
   const c = cur;
-  const imgs = c.images && c.images.length ? c.images : (c.cover_image_url ? [c.cover_image_url] : []);
-  const specs = [['ปีรถ', c.year], ['เลขไมล์', c.mileage], ['เครื่องยนต์', c.engine], ['เกียร์', c.gear]].filter((p) => p[1] != null && p[1] !== '');
+  const imgs = c.images && c.images.length
+    ? c.images.map(i => typeof i === 'object' ? (i.image_url || '') : i).filter(Boolean)
+    : (c.cover_image_url ? [c.cover_image_url] : []);
+  const specs = [
+    ['📅 ปีรถ',      c.year],
+    ['🛣️ ไมล์',     c.mileage != null ? Number(c.mileage).toLocaleString('th-TH') + ' กม.' : null],
+    ['⚙️ เครื่องยนต์', c.engine],
+    ['🔧 เกียร์',    c.gear],
+    ['🏷️ ทะเบียน',   c.license_plate],
+  ].filter(p => p[1] != null && p[1] !== '');
   $('#sheet').innerHTML =
+    /* ── Hero image ───────────────────────────────────── */
     '<div class="sh-hero">' +
-    (imgs.length ? '<img id="shImg" src="' + esc(imgs[0]) + '" alt="' + esc(carName(c)) + '">' : '<div class="noimg" style="height:100%;display:grid;place-items:center;font-size:3rem;color:#fff">🚗</div>') +
-    '<button class="sh-x" id="shX" aria-label="ปิด">✕</button>' +
-    '<button class="sh-share" id="shShare" aria-label="แชร์รถคันนี้">🔗</button>' +
-    (imgs.length > 1 ? '<button class="sh-nav prev" id="shPrev" aria-label="รูปก่อนหน้า">‹</button><button class="sh-nav next" id="shNext" aria-label="รูปถัดไป">›</button><span class="sh-count" id="shCount">1/' + imgs.length + '</span>' : '') +
+    (imgs.length ? '<img id="shImg" src="' + esc(imgs[0]) + '" alt="' + esc(carName(c)) + '" loading="eager">' : '<div class="noimg" style="height:100%;display:grid;place-items:center;font-size:3rem">🚗</div>') +
+    '<div class="sh-grad"></div>' +
+    '<button class="sh-x" id="shX">✕</button>' +
+    '<button class="sh-share" id="shShare">🔗</button>' +
+    (imgs.length > 1 ? '<button class="sh-nav prev" id="shPrev">‹</button><button class="sh-nav next" id="shNext">›</button>' : '') +
+    '<div class="sh-hero-foot">' +
+    (c.is_hot ? '<span class="sh-hot">🔥 HOT</span>' : '<span></span>') +
+    (imgs.length > 1 ? '<span class="sh-count" id="shCount">1/' + imgs.length + '</span>' : '') +
     '</div>' +
-    (imgs.length > 1 ? '<div class="sh-thumbs">' + imgs.map((u, k) => '<img src="' + esc(u) + '" data-k="' + k + '" class="' + (k === 0 ? 'on' : '') + '" alt="">').join('') + '</div>' : '') +
-    '<div class="sh-bd">' + (c.is_hot ? '<span class="sh-hot">🔥 HOT</span>' : '') + '<div class="sh-nm">' + esc(carName(c)) + '</div><div class="sh-price">' + (baht(c.price) || 'สอบถามราคา') + (hasDiscount(c) ? '<s class="old">' + baht(c.original_price) + '</s>' : '') + '</div>' +
-    (specs.length ? '<div class="specs">' + specs.map((p) => '<div class="spec"><span>' + p[0] + '</span><b>' + esc(p[1]) + '</b></div>').join('') + '</div>' : '') +
+    '</div>' +
+    /* ── Thumbnails ─────────────────────────────────── */
+    (imgs.length > 1 ? '<div class="sheet-thumbs">' + imgs.map((u, k) => '<img src="' + esc(u) + '" data-k="' + k + '" class="' + (k === 0 ? 'on' : '') + '" alt="" loading="lazy">').join('') + '</div>' : '') +
+    /* ── Body ──────────────────────────────────────── */
+    '<div class="sh-bd">' +
+    '<div class="sh-nm">' + esc(carName(c)) + '</div>' +
+    '<div class="sh-price">' + (baht(c.price) || 'สอบถามราคา') + (hasDiscount(c) ? '<s class="old">' + baht(c.original_price) + '</s>' : '') + '</div>' +
+    /* spec pills */
+    (specs.length ? '<div class="spec-pills">' + specs.map(p => '<span class="spec-pill"><em>' + p[0] + '</em><b>' + esc(String(p[1])) + '</b></span>').join('') + '</div>' : '') +
+    /* description */
     (cleanDesc(c.description) ? '<div class="desc">' + esc(cleanDesc(c.description)) + '</div>' : '') +
+    /* tiktok */
     ((c.tiktok_url && /^https?:\/\//i.test(c.tiktok_url)) ? '<a class="cta cta-tiktok" href="' + esc(c.tiktok_url) + '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 3c.32 2.1 1.62 3.55 3.5 3.8v2.35c-1.16.05-2.32-.2-3.36-.78l-.02 5.6c0 2.96-2.2 5.23-5.06 5.23-2.85 0-5.06-2.27-5.06-5.18 0-2.93 2.27-5.2 5.13-5.2.27 0 .54.02.8.06v2.53a2.6 2.6 0 0 0-.86-.15c-1.46 0-2.6 1.18-2.6 2.7 0 1.5 1.14 2.66 2.6 2.66 1.46 0 2.62-1.13 2.62-2.6V3h2.37z"/></svg>🎵 ดูวิดีโอรถคันนี้ใน TikTok</a>' : '') +
     '<div class="cta-row"><button class="cta cta-line" data-line><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.64 2 10.1c0 4 3.55 7.34 8.35 7.97.32.07.77.21.88.49.1.25.07.64.03.9l-.14.86c-.04.25-.2 1 .87.54s5.79-3.41 7.9-5.84C21.3 13.5 22 11.88 22 10.1 22 5.64 17.52 2 12 2z"/></svg>สอบถาม LINE</button>' +
-    '<button class="cta cta-call" data-call><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.5 21 3 13.5 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z"/></svg>โทรเลย</button></div></div>';
+    '<button class="cta cta-call" data-call><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.5 21 3 13.5 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z"/></svg>โทรเลย</button></div>' +
+    '</div>';
   $('#shX').addEventListener('click', closeDetail);
   $('#shShare').addEventListener('click', () => shareCar(cur));
   const D = imgs.length;
   if (D > 1) {
     $('#shPrev').addEventListener('click', () => { curIdx = (curIdx - 1 + D) % D; gallery(D); });
     $('#shNext').addEventListener('click', () => { curIdx = (curIdx + 1) % D; gallery(D); });
-    $('#sheet').querySelectorAll('.sh-thumbs img').forEach((t) => t.addEventListener('click', () => { curIdx = Number(t.dataset.k); gallery(D); }));
+    $('#sheet').querySelectorAll('.sheet-thumbs img').forEach((t) => t.addEventListener('click', () => { curIdx = Number(t.dataset.k); gallery(D); }));
   }
   $('#sheet').querySelectorAll('[data-line]').forEach((b) => b.addEventListener('click', () => window.open(lineCarUrl(cur), '_blank')));
   $('#sheet').querySelectorAll('[data-call]').forEach((b) => b.addEventListener('click', () => { location.href = 'tel:' + CONFIG.PHONE.replace(/[^0-9+]/g, ''); }));
